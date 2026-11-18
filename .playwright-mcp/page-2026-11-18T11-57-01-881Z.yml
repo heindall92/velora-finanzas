@@ -1,0 +1,63 @@
+- generic [ref=e4]:
+  - generic [ref=e415]:
+    - heading "Perfil" [level=1] [ref=e416]
+    - generic [ref=e418]:
+      - generic [ref=e419]: A
+      - generic [ref=e420]:
+        - heading "Ayesha Rahman" [level=2] [ref=e421]
+        - paragraph [ref=e422]: ayesha@ejemplo.com
+    - generic [ref=e423]:
+      - heading "Configuración" [level=3] [ref=e424]
+      - generic [ref=e425]:
+        - button [ref=e426]:
+          - generic [ref=e431]:
+            - paragraph [ref=e432]: Información Personal
+            - paragraph [ref=e433]: Editar nombre y email
+        - button [ref=e436]:
+          - generic [ref=e441]:
+            - paragraph [ref=e442]: Moneda
+            - paragraph [ref=e443]: Real Brasileño
+        - button [ref=e446]:
+          - generic [ref=e451]:
+            - paragraph [ref=e452]: Notificaciones
+            - paragraph [ref=e453]: Gestionar alertas
+    - generic [ref=e456]:
+      - heading "Datos" [level=3] [ref=e457]
+      - generic [ref=e458]:
+        - button [ref=e459]:
+          - generic [ref=e464]:
+            - paragraph [ref=e465]: Exportar Datos
+            - paragraph [ref=e466]: Descargar backup JSON
+        - button [ref=e469]:
+          - generic [ref=e474]:
+            - paragraph [ref=e475]: Importar Datos
+            - paragraph [ref=e476]: Restaurar desde backup
+        - button [ref=e479]:
+          - generic [ref=e490]:
+            - paragraph [ref=e491]: Cargar Datos Demo
+            - paragraph [ref=e492]: Para pruebas
+    - generic [ref=e495]:
+      - heading "Soporte" [level=3] [ref=e496]
+      - generic [ref=e497]:
+        - button [ref=e498]:
+          - generic [ref=e503]:
+            - paragraph [ref=e504]: Ayuda & Soporte
+            - paragraph [ref=e505]: Centro de ayuda
+        - button [ref=e508]:
+          - generic [ref=e512]:
+            - paragraph [ref=e513]: Seguridad & Privacidad
+            - paragraph [ref=e514]: Gestionar permisos
+    - button "Borrar Todos los Datos" [ref=e517]
+    - generic [ref=e522]:
+      - paragraph [ref=e523]: Velora Finanzas v1.0.0
+      - paragraph [ref=e524]: Tus datos solo se guardan localmente
+  - navigation [ref=e61]:
+    - generic [ref=e63]:
+      - link "Inicio" [ref=e64] [cursor=pointer]:
+        - /url: /velora-finanzas
+      - link "Análisis" [ref=e69] [cursor=pointer]:
+        - /url: /velora-finanzas/analytics
+      - link "Tarjetas" [ref=e73] [cursor=pointer]:
+        - /url: /velora-finanzas/cards
+      - link "Perfil" [active] [ref=e77] [cursor=pointer]:
+        - /url: /velora-finanzas/profile
