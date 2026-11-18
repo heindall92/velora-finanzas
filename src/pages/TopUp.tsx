@@ -33,18 +33,18 @@ export default function TopUp() {
   };
 
   return (
-    <div className="min-h-dvh bg-slate-50">
-      <div className="border-b border-slate-100 bg-white px-4 py-4">
+    <div className="min-h-dvh">
+      <div className="border-b border-slate-100 bg-[var(--bg-elevated)] px-4 py-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="pressable rounded-xl p-2 text-slate-700"
+            className="pressable rounded-xl p-2 text-[var(--text)]"
             aria-label="Volver"
           >
             <ChevronLeft size={24} strokeWidth={1.75} />
           </button>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Recargar Saldo</h1>
+          <h1 className="text-xl font-bold tracking-tight text-[var(--text)]">Recargar Saldo</h1>
         </div>
       </div>
 
@@ -54,13 +54,13 @@ export default function TopUp() {
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-700 text-white shadow-lg shadow-blue-500/30">
               <CreditCard size={36} strokeWidth={1.5} />
             </div>
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+            <h2 className="text-lg font-semibold tracking-tight text-[var(--text)]">
               Añadir dinero a tu cuenta
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Simula una recarga de saldo</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Simula una recarga de saldo</p>
           </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-500">Monto</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Monto</label>
           <div className="relative mb-4">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-bold tracking-tight text-blue-600">
               {currencySymbol}
@@ -72,7 +72,7 @@ export default function TopUp() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 py-4 pl-16 pr-4 text-3xl font-bold tracking-tight text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="field-input w-full py-4 pl-16 pr-4 text-3xl font-bold tracking-tight"
               required
             />
           </div>

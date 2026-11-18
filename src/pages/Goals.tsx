@@ -231,7 +231,7 @@ export default function Goals() {
               value={newGoal.name}
               onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
               placeholder="ej. Vacaciones, Nuevo auto..."
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+              className="field-input"
               required
             />
           </Field>
@@ -243,7 +243,7 @@ export default function Goals() {
               value={newGoal.targetAmount}
               onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+              className="field-input"
               required
             />
           </Field>
@@ -255,7 +255,7 @@ export default function Goals() {
               value={newGoal.currentAmount}
               onChange={(e) => setNewGoal({ ...newGoal, currentAmount: e.target.value })}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+              className="field-input"
             />
           </Field>
           <Field label="Descripción (opcional)">
@@ -264,7 +264,7 @@ export default function Goals() {
               onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
               placeholder="¿Para qué es este objetivo?"
               rows={3}
-              className="w-full resize-none rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+              className="field-input"
             />
           </Field>
           <div className="flex gap-3 pt-1">

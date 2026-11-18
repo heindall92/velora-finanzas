@@ -89,7 +89,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="onboarding-shell min-h-dvh bg-slate-50">
+    <div className="onboarding-shell min-h-dvh">
       <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col lg:flex-row">
         <aside className="relative hidden overflow-hidden bg-gradient-to-br from-sky-400 via-blue-500 to-blue-700 px-10 py-12 text-white lg:flex lg:w-[42%] lg:flex-col lg:justify-between">
           <div>
@@ -114,19 +114,19 @@ export default function Onboarding() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white">
                 <Wallet size={22} strokeWidth={1.75} aria-hidden="true" />
               </div>
-              <h1 id={formTitleId} className="text-3xl font-bold tracking-tight text-slate-900">
+              <h1 id={formTitleId} className="text-3xl font-bold tracking-tight text-[var(--text)]">
                 Velora
               </h1>
-              <p className="mt-2 text-slate-500">
+              <p className="mt-2 text-[var(--text-muted)]">
                 Cuenta limpia. Nombre, apellidos y presupuesto — nada más.
               </p>
             </div>
 
             <div className="mb-8 hidden lg:block">
-              <h2 id={formTitleId} className="text-2xl font-bold tracking-tight text-slate-900">
+              <h2 id={formTitleId} className="text-2xl font-bold tracking-tight text-[var(--text)]">
                 Configura tu perfil
               </h2>
-              <p className="mt-2 text-slate-500">
+              <p className="mt-2 text-[var(--text-muted)]">
                 Empezarás sin transacciones ni metas. Sin dirección ni datos bancarios.
               </p>
             </div>
@@ -152,7 +152,7 @@ export default function Onboarding() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Nombre"
-                    className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+                    className="field-input"
                     required
                   />
                   <p className="field-error">Indica tu nombre.</p>
@@ -170,7 +170,7 @@ export default function Onboarding() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Apellidos"
-                    className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+                    className="field-input"
                     required
                   />
                   <p className="field-error">Indica tus apellidos.</p>
@@ -186,7 +186,7 @@ export default function Onboarding() {
                       className={`pressable flex cursor-pointer items-center justify-center rounded-2xl px-3 py-3 text-sm font-medium ${
                         currency === c.code
                           ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                          : 'bg-slate-50 text-slate-700'
+                          : 'bg-[var(--bg)] text-[var(--text)]'
                       }`}
                     >
                       <input
@@ -222,11 +222,11 @@ export default function Onboarding() {
                     onChange={(e) => setBudget(e.target.value)}
                     placeholder="0.00"
                     aria-describedby={budgetHelpId}
-                    className="w-full rounded-2xl bg-slate-50 py-4 pl-14 pr-4 text-lg font-semibold outline-none ring-blue-500 focus:ring-2"
+                    className="field-input pl-14 text-lg font-semibold"
                     required
                   />
                 </div>
-                <p id={budgetHelpId} className="mt-2 text-xs text-slate-500">
+                <p id={budgetHelpId} className="mt-2 text-xs text-[var(--text-muted)]">
                   Será tu saldo inicial. La cuenta queda vacía de movimientos de ejemplo.
                 </p>
               </div>
@@ -251,7 +251,7 @@ export default function Onboarding() {
               <button
                 type="button"
                 onClick={handleImport}
-                className="pressable flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
+                className="pressable flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-[var(--text)] shadow-sm"
               >
                 <Upload size={16} strokeWidth={1.75} aria-hidden="true" />
                 Importar JSON
@@ -259,7 +259,7 @@ export default function Onboarding() {
               <button
                 type="button"
                 onClick={handleExport}
-                className="pressable flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
+                className="pressable flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-[var(--text)] shadow-sm"
               >
                 <Download size={16} strokeWidth={1.75} aria-hidden="true" />
                 Exportar JSON

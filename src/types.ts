@@ -49,13 +49,17 @@ export interface Goal {
   imageUrl?: string;
 }
 
+export type ThemeMode = 'light' | 'dark';
+
 export interface UserProfile {
   name: string;
   firstName: string;
   lastName: string;
   email?: string;
   currency: string;
+  /** 'es' | 'pt' */
   language: string;
+  theme: ThemeMode;
   avatar?: string;
   /** Presupuesto mensual (sin datos bancarios) */
   budget: number;

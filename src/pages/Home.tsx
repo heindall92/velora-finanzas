@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryIcon, categoryStyles } from '../components/icons';
+import { localeFor, t } from '../i18n';
 
 export default function Home() {
   const { data } = useApp();
@@ -39,8 +40,10 @@ export default function Home() {
   const displayName =
     data.profile.firstName || data.profile.name.split(' ')[0] || data.profile.name;
 
+  const lang = data.profile.language;
+
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('es-ES', {
+    new Intl.NumberFormat(localeFor(lang), {
       style: 'currency',
       currency: data.profile.currency,
     }).format(amount);
@@ -55,15 +58,15 @@ export default function Home() {
                 {(displayName || '?').charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm text-slate-500">Hola,</p>
-                <p className="text-lg font-semibold tracking-tight text-slate-900">
+                <p className="text-sm text-[var(--text-muted)]">{t(lang, 'hello')}</p>
+                <p className="text-lg font-semibold tracking-tight text-[var(--text)]">
                   {displayName}
                 </p>
               </div>
             </div>
             <button
               type="button"
-              className="pressable rounded-2xl p-2.5 text-slate-600"
+              className="pressable rounded-2xl p-2.5 text-[var(--text-muted)]"
               aria-label="Notificaciones"
             >
               <Bell size={22} strokeWidth={1.75} />
@@ -96,8 +99,8 @@ export default function Home() {
           {budget > 0 && (
             <div className="glass-card mt-4 rounded-[22px] p-4">
               <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-700">Presupuesto del mes</span>
-                <span className="tabular-nums text-slate-500">
+                <span className="font-medium text-[var(--text)]">Presupuesto del mes</span>
+                <span className="tabular-nums text-[var(--text-muted)]">
                   {formatCurrency(monthSpending)} / {formatCurrency(budget)}
                 </span>
               </div>
@@ -110,7 +113,7 @@ export default function Home() {
                   }}
                 />
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-[var(--text-muted)]">
                 Quedan {formatCurrency(budgetLeft)} este mes
               </p>
             </div>
@@ -132,7 +135,7 @@ export default function Home() {
                 label: 'Más',
                 icon: MoreHorizontal,
                 path: '/goals',
-                tone: 'bg-slate-100 text-slate-600',
+                tone: 'bg-slate-100 text-[var(--text-muted)]',
               },
             ].map(({ label, icon: Icon, path, tone }) => (
               <button
@@ -144,7 +147,7 @@ export default function Home() {
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${tone}`}>
                   <Icon size={20} strokeWidth={1.75} />
                 </div>
-                <span className="text-xs font-medium text-slate-700">{label}</span>
+                <span className="text-xs font-medium text-[var(--text)]">{label}</span>
               </button>
             ))}
           </div>
@@ -153,7 +156,7 @@ export default function Home() {
 
       <div className="px-5 py-4 lg:col-span-2 lg:px-0 lg:py-0">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+          <h3 className="text-lg font-semibold tracking-tight text-[var(--text)]">
             Transacciones Recientes
           </h3>
           <button
@@ -166,7 +169,7 @@ export default function Home() {
         </div>
 
         {recentTransactions.length === 0 ? (
-          <div className="py-12 text-center text-slate-400">
+          <div className="py-12 text-center text-[var(--text-muted)]">
             <p>No hay transacciones aún</p>
           </div>
         ) : (
@@ -186,10 +189,10 @@ export default function Home() {
                   <CategoryIcon category={transaction.category} size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-slate-900">
+                  <p className="truncate font-medium text-[var(--text)]">
                     {transaction.recipientName || transaction.category}
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[var(--text-muted)]">
                     {new Date(transaction.date).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'short',
@@ -200,7 +203,7 @@ export default function Home() {
                 </div>
                 <p
                   className={`shrink-0 font-semibold tabular-nums ${
-                    transaction.type === 'income' ? 'text-emerald-600' : 'text-slate-900'
+                    transaction.type === 'income' ? 'text-emerald-600' : 'text-[var(--text)]'
                   }`}
                 >
                   {transaction.type === 'income' ? '+' : '-'}

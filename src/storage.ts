@@ -15,6 +15,7 @@ export const defaultProfile = (): UserProfile => ({
   lastName: '',
   currency: 'BRL',
   language: 'es',
+  theme: 'light',
   budget: 0,
   onboardingComplete: false,
 });
@@ -64,7 +65,8 @@ function migrateProfile(raw: Partial<UserProfile> | undefined): UserProfile {
     name: name === 'Usuario' ? '' : name,
     budget: typeof raw.budget === 'number' ? raw.budget : 0,
     currency: raw.currency || 'BRL',
-    language: raw.language || 'es',
+    language: raw.language === 'pt' ? 'pt' : 'es',
+    theme: raw.theme === 'dark' ? 'dark' : 'light',
     // Solo cuenta limpia + onboarding explícito; sin datos demo
     onboardingComplete: raw.onboardingComplete === true,
   };

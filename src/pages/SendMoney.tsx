@@ -42,25 +42,25 @@ export default function SendMoney() {
   };
 
   return (
-    <div className="min-h-dvh bg-slate-50">
-      <div className="border-b border-slate-100 bg-white px-4 py-4">
+    <div className="min-h-dvh">
+      <div className="border-b border-slate-100 bg-[var(--bg-elevated)] px-4 py-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="pressable rounded-xl p-2 text-slate-700"
+            className="pressable rounded-xl p-2 text-[var(--text)]"
             aria-label="Volver"
           >
             <ChevronLeft size={24} strokeWidth={1.75} />
           </button>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Enviar Dinero</h1>
+          <h1 className="text-xl font-bold tracking-tight text-[var(--text)]">Enviar Dinero</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="p-5">
         <div className="glass-card mb-6 rounded-[28px] p-6">
-          <label className="mb-2 block text-sm font-medium text-slate-500">Destinatario</label>
-          <div className="mb-6 flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
+          <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Destinatario</label>
+          <div className="mb-6 flex items-center gap-3 rounded-2xl field-input p-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-lg font-semibold text-white">
               {recipient ? recipient.charAt(0).toUpperCase() : '?'}
             </div>
@@ -69,12 +69,12 @@ export default function SendMoney() {
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="Nombre del destinatario"
-              className="min-w-0 flex-1 bg-transparent font-medium text-slate-900 outline-none"
+              className="min-w-0 flex-1 bg-transparent font-medium text-[var(--text)] outline-none"
               required
             />
           </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-500">Monto</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Monto</label>
           <div className="relative mb-4">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-bold tracking-tight text-blue-600">
               {currencySymbol}
@@ -86,7 +86,7 @@ export default function SendMoney() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 py-4 pl-16 pr-4 text-3xl font-bold tracking-tight text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="field-input w-full py-4 pl-16 pr-4 text-3xl font-bold tracking-tight"
               required
             />
           </div>
@@ -105,11 +105,11 @@ export default function SendMoney() {
             ))}
           </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-500">Categoría</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Categoría</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as TransactionCategory)}
-            className="mb-4 w-full rounded-2xl bg-slate-50 p-4 font-medium text-slate-900 outline-none ring-blue-500 focus:ring-2"
+            className="mb-4 w-full rounded-2xl field-input p-4 font-medium text-[var(--text)] outline-none ring-blue-500 focus:ring-2"
           >
             <option value="Other">Otro</option>
             <option value="Food & Drink">Comida y Bebida</option>
@@ -122,13 +122,13 @@ export default function SendMoney() {
             <option value="Travel">Viajes</option>
           </select>
 
-          <label className="mb-2 block text-sm font-medium text-slate-500">Nota (opcional)</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">Nota (opcional)</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Agregar una nota..."
             rows={3}
-            className="w-full resize-none rounded-2xl bg-slate-50 p-4 text-slate-900 outline-none ring-blue-500 focus:ring-2"
+            className="field-input"
           />
         </div>
 
@@ -138,7 +138,7 @@ export default function SendMoney() {
         >
           Enviar Ahora
         </button>
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="mt-4 text-center text-sm text-[var(--text-muted)]">
           La transacción se registrará inmediatamente
         </p>
       </form>

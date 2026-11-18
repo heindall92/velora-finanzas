@@ -53,7 +53,7 @@ export default function TransactionDetail() {
   };
 
   return (
-    <div className="min-h-dvh bg-slate-50">
+    <div className="min-h-dvh">
       <div className="border-b border-slate-100 bg-white px-4 py-4">
         <div className="flex items-center justify-between">
           <button
