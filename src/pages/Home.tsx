@@ -1,19 +1,21 @@
-import { Send, Download, Plus, MoreHorizontal, Eye, EyeOff, Bell, CreditCard } from 'lucide-react';
+import { Send, Download, Receipt, MoreHorizontal, Eye, EyeOff, Bell, CreditCard } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CategoryIcon, categoryStyles } from '../components/icons';
+import { CategoryIcon, categoryStyles, categoryLabel } from '../components/icons';
 import { localeFor, t } from '../i18n';
+import AddExpenseSheet from '../components/AddExpenseSheet';
 
 export default function Home() {
   const { data } = useApp();
   const navigate = useNavigate();
   const [hideBalance, setHideBalance] = useState(false);
+  const [showExpense, setShowExpense] = useState(false);
 
   const totalBalance = useMemo(() => {
-    return data.transactions.reduce((sum, t) => {
-      if (t.type === 'income') return sum + t.amount;
-      if (t.type === 'expense') return sum - t.amount;
+    return data.transactions.reduce((sum, tx) => {
+      if (tx.type === 'income') return sum + tx.amount;
+      if (tx.type === 'expense') return sum - tx.amount;
       return sum;
     }, 0);
   }, [data.transactions]);
@@ -21,15 +23,15 @@ export default function Home() {
   const monthSpending = useMemo(() => {
     const now = new Date();
     return data.transactions
-      .filter((t) => {
-        const d = new Date(t.date);
+      .filter((tx) => {
+        const d = new Date(tx.date);
         return (
-          t.type === 'expense' &&
+          tx.type === 'expense' &&
           d.getMonth() === now.getMonth() &&
           d.getFullYear() === now.getFullYear()
         );
       })
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, tx) => sum + tx.amount, 0);
   }, [data.transactions]);
 
   const budget = data.profile.budget || 0;
@@ -67,7 +69,7 @@ export default function Home() {
             <button
               type="button"
               className="pressable rounded-2xl p-2.5 text-[var(--text-muted)]"
-              aria-label="Notificaciones"
+              aria-label={t(lang, 'notifications')}
             >
               <Bell size={22} strokeWidth={1.75} />
             </button>
@@ -75,7 +77,7 @@ export default function Home() {
 
           <div className="rounded-[28px] bg-gradient-to-br from-sky-400 via-blue-500 to-blue-700 p-6 text-white shadow-[0_16px_40px_rgba(0,102,255,0.35)]">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm text-white/90">Saldo Total</p>
+              <p className="text-sm text-white/90">{t(lang, 'totalBalance')}</p>
               <button
                 type="button"
                 className="pressable rounded-full p-1.5 hover:bg-white/15"
@@ -91,7 +93,8 @@ export default function Home() {
             <div className="flex items-center gap-2 text-sm text-white/85">
               <CreditCard size={14} strokeWidth={1.75} />
               <span>
-                Presupuesto {hideBalance ? '••••' : formatCurrency(budget)} · este mes
+                {t(lang, 'monthlyBudget')} {hideBalance ? '••••' : formatCurrency(budget)} ·{' '}
+                {t(lang, 'thisMonth')}
               </span>
             </div>
           </div>
@@ -99,12 +102,12 @@ export default function Home() {
           {budget > 0 && (
             <div className="glass-card mt-4 rounded-[22px] p-4">
               <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="font-medium text-[var(--text)]">Presupuesto del mes</span>
+                <span className="font-medium text-[var(--text)]">{t(lang, 'monthlyBudget')}</span>
                 <span className="tabular-nums text-[var(--text-muted)]">
                   {formatCurrency(monthSpending)} / {formatCurrency(budget)}
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 <div
                   className="h-2 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 transition-[width] duration-500"
                   style={{
@@ -114,7 +117,7 @@ export default function Home() {
                 />
               </div>
               <p className="mt-2 text-xs text-[var(--text-muted)]">
-                Quedan {formatCurrency(budgetLeft)} este mes
+                {t(lang, 'remaining')} {formatCurrency(budgetLeft)} {t(lang, 'thisMonth')}
               </p>
             </div>
           )}
@@ -123,25 +126,30 @@ export default function Home() {
         <div className="px-5 py-2 lg:px-0">
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {[
-              { label: 'Enviar', icon: Send, path: '/send', tone: 'bg-blue-100 text-blue-600' },
+              { label: t(lang, 'send'), icon: Send, tone: 'bg-blue-100 text-blue-600', action: () => navigate('/send') },
               {
-                label: 'Recibir',
+                label: t(lang, 'receive'),
                 icon: Download,
-                path: '/receive',
                 tone: 'bg-emerald-100 text-emerald-600',
+                action: () => navigate('/receive'),
               },
-              { label: 'Recargar', icon: Plus, path: '/topup', tone: 'bg-sky-100 text-sky-600' },
               {
-                label: 'Más',
-                icon: MoreHorizontal,
-                path: '/goals',
-                tone: 'bg-slate-100 text-[var(--text-muted)]',
+                label: t(lang, 'expenses'),
+                icon: Receipt,
+                tone: 'bg-orange-100 text-orange-600',
+                action: () => setShowExpense(true),
               },
-            ].map(({ label, icon: Icon, path, tone }) => (
+              {
+                label: t(lang, 'more'),
+                icon: MoreHorizontal,
+                tone: 'bg-slate-100 text-[var(--text-muted)]',
+                action: () => navigate('/goals'),
+              },
+            ].map(({ label, icon: Icon, tone, action }) => (
               <button
                 key={label}
                 type="button"
-                onClick={() => navigate(path)}
+                onClick={action}
                 className="pressable flex flex-col items-center gap-2 rounded-2xl p-3"
               >
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${tone}`}>
@@ -157,20 +165,27 @@ export default function Home() {
       <div className="px-5 py-4 lg:col-span-2 lg:px-0 lg:py-0">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold tracking-tight text-[var(--text)]">
-            Transacciones Recientes
+            {t(lang, 'recentTx')}
           </h3>
           <button
             type="button"
             className="pressable text-sm font-medium text-blue-600"
             onClick={() => navigate('/analytics')}
           >
-            Ver todo
+            {t(lang, 'viewAll')}
           </button>
         </div>
 
         {recentTransactions.length === 0 ? (
           <div className="py-12 text-center text-[var(--text-muted)]">
-            <p>No hay transacciones aún</p>
+            <p>{t(lang, 'noTx')}</p>
+            <button
+              type="button"
+              onClick={() => setShowExpense(true)}
+              className="pressable mt-4 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white"
+            >
+              {t(lang, 'addExpense')}
+            </button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -183,17 +198,20 @@ export default function Home() {
               >
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
-                    categoryStyles[transaction.category] || categoryStyles.Other
+                    categoryStyles[transaction.category] ||
+                    getToneFallback(transaction.category)
                   }`}
                 >
                   <CategoryIcon category={transaction.category} size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-[var(--text)]">
-                    {transaction.recipientName || transaction.category}
+                    {transaction.recipientName ||
+                      categoryLabel(transaction.category, lang)}
                   </p>
                   <p className="text-sm text-[var(--text-muted)]">
-                    {new Date(transaction.date).toLocaleDateString('es-ES', {
+                    {categoryLabel(transaction.category, lang)} ·{' '}
+                    {new Date(transaction.date).toLocaleDateString(localeFor(lang), {
                       day: 'numeric',
                       month: 'short',
                       hour: '2-digit',
@@ -214,6 +232,12 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <AddExpenseSheet open={showExpense} onClose={() => setShowExpense(false)} />
     </div>
   );
+}
+
+function getToneFallback(category: string): string {
+  return categoryStyles[category] || 'bg-slate-100 text-slate-700';
 }

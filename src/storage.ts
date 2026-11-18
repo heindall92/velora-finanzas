@@ -72,16 +72,38 @@ function migrateProfile(raw: Partial<UserProfile> | undefined): UserProfile {
   };
 }
 
+function migrateGoals(goals: AppData['goals'] | undefined): AppData['goals'] {
+  if (!Array.isArray(goals)) return [];
+  return goals
+    .filter((g) => {
+      const name = (g.name || '').toLowerCase();
+      // Quitar demo "Viaje a Bali" y similares
+      if (name.includes('bali')) return false;
+      return true;
+    })
+    .map((g) => {
+      const { imageUrl: _drop, ...rest } = g;
+      // Sin fotos de stock tipo cartel de viaje
+      return { ...rest, imageUrl: undefined };
+    });
+}
+
 export const loadData = async (): Promise<AppData> => {
   try {
     const data = await store.getItem<AppData>(STORAGE_KEY);
     if (!data) return defaultData();
-    return {
+    const migrated: AppData = {
       ...defaultData(),
       ...data,
+      goals: migrateGoals(data.goals),
       profile: migrateProfile(data.profile),
       version: STORAGE_VERSION,
     };
+    // Persistir limpieza del demo Bali si aplica
+    if (JSON.stringify(data.goals || []) !== JSON.stringify(migrated.goals)) {
+      await store.setItem(STORAGE_KEY, migrated);
+    }
+    return migrated;
   } catch (error) {
     console.error('Error loading data:', error);
     return defaultData();

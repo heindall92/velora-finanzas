@@ -1,56 +1,20 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  UtensilsCrossed,
-  ShoppingBag,
-  Car,
-  Clapperboard,
-  Lightbulb,
-  HeartPulse,
-  GraduationCap,
-  Plane,
-  Banknote,
-  Laptop,
-  TrendingUp,
-  Gift,
   ClipboardList,
   Target,
   PiggyBank,
   Shield,
   Wallet,
+  Plane,
+  Laptop,
 } from 'lucide-react';
-import type { TransactionCategory } from '../types';
+import { EXPENSE_CATEGORIES, getCategoryDef } from '../lib/expenseCategories';
 
-export const categoryIcons: Record<TransactionCategory, LucideIcon> = {
-  'Food & Drink': UtensilsCrossed,
-  Shopping: ShoppingBag,
-  Transport: Car,
-  Entertainment: Clapperboard,
-  Bills: Lightbulb,
-  Healthcare: HeartPulse,
-  Education: GraduationCap,
-  Travel: Plane,
-  Salary: Banknote,
-  Freelance: Laptop,
-  Investment: TrendingUp,
-  Gift: Gift,
-  Other: ClipboardList,
-};
+export { categoryLabel, normalizeCategory } from '../lib/expenseCategories';
 
-export const categoryStyles: Record<string, string> = {
-  'Food & Drink': 'bg-emerald-100 text-emerald-700',
-  Shopping: 'bg-rose-100 text-rose-700',
-  Transport: 'bg-amber-100 text-amber-700',
-  Entertainment: 'bg-blue-100 text-blue-700',
-  Bills: 'bg-sky-100 text-sky-700',
-  Healthcare: 'bg-red-100 text-red-700',
-  Education: 'bg-indigo-100 text-indigo-700',
-  Travel: 'bg-cyan-100 text-cyan-700',
-  Salary: 'bg-emerald-100 text-emerald-700',
-  Freelance: 'bg-blue-100 text-blue-700',
-  Investment: 'bg-teal-100 text-teal-700',
-  Gift: 'bg-pink-100 text-pink-700',
-  Other: 'bg-slate-100 text-slate-700',
-};
+export const categoryStyles: Record<string, string> = Object.fromEntries(
+  EXPENSE_CATEGORIES.map((c) => [c.id, c.tone])
+);
 
 export const goalIcons: Record<string, LucideIcon> = {
   travel: Plane,
@@ -70,7 +34,7 @@ export function CategoryIcon({
   size?: number;
   className?: string;
 }) {
-  const Icon = categoryIcons[category as TransactionCategory] ?? ClipboardList;
+  const Icon = getCategoryDef(category).icon;
   return <Icon size={size} strokeWidth={1.75} className={className} />;
 }
 
@@ -85,14 +49,17 @@ export function GoalIcon({
 }) {
   const key = (name || 'target').toLowerCase();
   const Icon =
-    key.includes('bali') || key.includes('viaj') || key.includes('travel')
+    key.includes('viaj') || key.includes('travel') || key.includes('vacac')
       ? Plane
       : key.includes('emerg') || key.includes('fondo')
         ? Shield
         : key.includes('portátil') || key.includes('laptop') || key.includes('comput')
           ? Laptop
-          : key.includes('ahorro') || key.includes('saving')
+          : key.includes('ahorro') || key.includes('saving') || key.includes('poupan')
             ? PiggyBank
             : Target;
   return <Icon size={size} strokeWidth={1.75} className={className} />;
 }
+
+/** Fallback genérico si se necesita un icono suelto */
+export const FallbackCategoryIcon: LucideIcon = ClipboardList;

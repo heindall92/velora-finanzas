@@ -10,12 +10,15 @@ import {
   Check,
   CircleDollarSign,
   X,
+  CreditCard,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { exportData, importData, clearAllData } from '../storage';
 import { useState } from 'react';
 import BottomSheet from '../components/BottomSheet';
 import AppleSwitch from '../components/AppleSwitch';
+import CardColorPicker from '../components/CardColorPicker';
+import { resolveCardColor, type CardColorId } from '../lib/cardColors';
 import { localeFor, t } from '../i18n';
 
 const currenciesEs = [
@@ -31,8 +34,9 @@ const currenciesPt = [
 ];
 
 export default function Profile() {
-  const { data, updateProfile, refreshData } = useApp();
+  const { data, updateProfile, updateAccount, addAccount, refreshData } = useApp();
   const lang = data.profile.language;
+  const primaryCard = data.accounts[0];
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showPersonalModal, setShowPersonalModal] = useState(false);
   const [firstName, setFirstName] = useState(data.profile.firstName || '');
@@ -179,6 +183,43 @@ export default function Profile() {
             title={t(lang, 'notifications')}
             subtitle={t(lang, 'notificationsSub')}
           />
+        </Section>
+
+        <Section title={t(lang, 'cardColor')}>
+          <div className="space-y-4 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <CreditCard size={18} strokeWidth={1.75} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-[var(--text)]">{t(lang, 'cardColor')}</p>
+                <p className="text-sm text-[var(--text-muted)]">{t(lang, 'cardColorHint')}</p>
+              </div>
+            </div>
+            <div
+              className={`h-20 w-full rounded-2xl bg-gradient-to-br ${
+                resolveCardColor(primaryCard?.color).gradient
+              } ${resolveCardColor(primaryCard?.color).shadow}`}
+              aria-hidden
+            />
+            <CardColorPicker
+              value={primaryCard?.color}
+              lang={lang}
+              onChange={async (id: CardColorId) => {
+                if (primaryCard) {
+                  await updateAccount(primaryCard.id, { color: id });
+                } else {
+                  await addAccount({
+                    name: 'Velora',
+                    type: 'card',
+                    lastFour: '3827',
+                    balance: 0,
+                    color: id,
+                  });
+                }
+              }}
+            />
+          </div>
         </Section>
 
         <Section title={t(lang, 'appearance')}>

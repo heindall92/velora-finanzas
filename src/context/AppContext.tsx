@@ -157,7 +157,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: `start-${Date.now()}`,
             type: 'income',
             amount: input.budget,
-            category: 'Other',
+            category: 'other',
             description: 'Saldo inicial / presupuesto',
             date: new Date().toISOString(),
             status: 'completed',
