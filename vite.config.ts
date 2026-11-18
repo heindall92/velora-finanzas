@@ -2,9 +2,13 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// En Vercel la app se sirve desde la raíz; en GitHub Pages desde /velora-finanzas/.
+// BASE_PATH permite forzar otra ruta si hiciera falta.
+const base = process.env.BASE_PATH ?? (process.env.VERCEL ? '/' : '/velora-finanzas/')
+
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/velora-finanzas/',
+  base,
   plugins: [
     react(),
     VitePWA({

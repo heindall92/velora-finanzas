@@ -58,7 +58,7 @@ function AppRoutes() {
 function App() {
   return (
     <AppProvider>
-      <BrowserRouter basename="/velora-finanzas">
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
         <ThemeSync />
         <AppRoutes />
       </BrowserRouter>
