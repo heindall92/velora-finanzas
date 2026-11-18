@@ -13,19 +13,24 @@ Antes de implementar o revisar UI web en este repo, consulta y aplica:
 3. **apple-design / emil-design-eng / mobile-native** (Emil Kowalski)  
    Press feedback, springs interruptibles, materiales translúcidos, tipografía óptica, fixes nativos móviles.
 
+4. **dashboard-design** (abdiraimov-otabek) en `.agents/skills/dashboard-design/`  
+   Inicio, Extrato y Análisis: números honestos (comparar el mismo tramo del periodo, nada de % inventados), tokens claro/oscuro, listas con barra de 3 px, sin tarjetas medio vacías. Ignorar su sección "Sign-off".
+
 Las skills viven en `.agents/skills/`. Léelas antes de inventar patrones legacy.
 
 ## Producto
 
 - App de finanzas personales PWA: React + TypeScript + Vite + Tailwind.
 - Datos solo locales (IndexedDB / localforage). Sin backend ni telemetría.
-- UI en español. Monedas: BRL (default), USD, EUR.
-- Onboarding inicial: **solo nombre, apellidos y presupuesto** (sin datos bancarios ni dirección).
+- Usuario final en Brasil y en **iPhone**: UI en **portugués (pt-BR) por defecto**, español como segunda lengua. Toda cadena pasa por `src/lib/i18n.ts` (el tipo obliga a traducir ambas). Monedas: BRL (default), USD, EUR. Importes siempre con `formatMoney`/`parseAmount` (`src/lib/money.ts`), nunca `parseFloat`.
+- Onboarding: nombre, apellidos, moneda, presupuesto (opcional) y saldo actual (opcional). Sin datos bancarios ni dirección. El presupuesto es un límite de gasto, **no** un saldo.
+- Seguridad: PIN opcional con cifrado en reposo (`src/lib/vault.ts`), CSP estricta, sin scripts de terceros. Ver `SECURITY.md`. No añadir dependencias de red ni analítica.
 - Exportar / importar JSON siempre disponible.
 - Responsive: móvil y escritorio.
-- Accent de UI: azul eléctrico `#0066FF`. Iconos Lucide (sin emojis).
-- Tarjeta personalizable: azul, negro, rojo, verde, naranja, malva (sin datos demo; cuenta limpia).
-- Base path GitHub Pages: `/velora-finanzas/`.
+- Accent de UI: azul eléctrico `#0066FF`. Iconos Lucide (sin emojis). Colores solo vía tokens de `src/index.css` (claro y oscuro).
+- Tarjeta de saldo personalizable: azul, negro, rojo, verde, naranja, malva. Sin datos demo ni números inventados.
+- Base path GitHub Pages: `/velora-finanzas/`; Vercel en `/`.
+- Antes de dar algo por terminado: `npm run check` y `npm run e2e` (mira las capturas, no solo el código).
 
 ## Browser support
 

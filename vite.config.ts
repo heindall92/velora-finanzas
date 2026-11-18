@@ -1,39 +1,51 @@
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// En Vercel la app se sirve desde la raíz; en GitHub Pages desde /velora-finanzas/.
-// BASE_PATH permite forzar otra ruta si hiciera falta.
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
+
+// Vercel serves from the root; GitHub Pages from /velora-finanzas/. BASE_PATH overrides both.
 const base = process.env.BASE_PATH ?? (process.env.VERCEL ? '/' : '/velora-finanzas/')
 
-// https://vite.dev/config/
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
+  build: {
+    target: ['es2022', 'safari16'],
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      injectRegister: 'script',
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Velora Finanzas',
+        id: base,
+        name: 'Velora Finanças',
         short_name: 'Velora',
-        description: 'Aplicación de finanzas personales',
-        theme_color: '#0066FF',
-        background_color: '#ffffff',
+        description: 'Gastos, orçamento e metas. Tudo fica no seu aparelho.',
+        lang: 'pt-BR',
+        start_url: base,
+        scope: base,
         display: 'standalone',
+        orientation: 'portrait',
+        theme_color: '#f4f5f7',
+        background_color: '#f4f5f7',
+        categories: ['finance', 'productivity'],
         icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    })
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        navigateFallback: 'index.html',
+        cleanupOutdatedCaches: true,
+      },
+    }),
   ],
 })
