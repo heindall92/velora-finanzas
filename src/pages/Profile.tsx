@@ -1,7 +1,20 @@
-import { ChevronRight, User, Bell, HelpCircle, Shield, LogOut, Download, Upload } from 'lucide-react';
+import {
+  ChevronRight,
+  User,
+  Bell,
+  HelpCircle,
+  Shield,
+  Trash2,
+  Download,
+  Upload,
+  Theater,
+  Check,
+  CircleDollarSign,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { exportData, importData, loadDemoData, clearAllData } from '../storage';
 import { useState } from 'react';
+import BottomSheet from '../components/BottomSheet';
 
 const currencies = [
   { code: 'BRL', name: 'Real Brasileño', symbol: 'R$' },
@@ -23,7 +36,7 @@ export default function Profile() {
       a.download = `velora-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch {
       alert('Error al exportar los datos');
     }
   };
@@ -34,15 +47,13 @@ export default function Profile() {
     input.accept = 'application/json';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        try {
-          const text = await file.text();
-          await importData(text);
-          await refreshData();
-          alert('Datos importados correctamente');
-        } catch (error) {
-          alert('Error al importar los datos. Verifica el archivo JSON.');
-        }
+      if (!file) return;
+      try {
+        await importData(await file.text());
+        await refreshData();
+        alert('Datos importados correctamente');
+      } catch {
+        alert('Error al importar los datos. Verifica el archivo JSON.');
       }
     };
     input.click();
@@ -52,217 +63,200 @@ export default function Profile() {
     if (confirm('¿Cargar datos de demostración? Esto reemplazará tus datos actuales.')) {
       await loadDemoData();
       await refreshData();
-      alert('Datos de demostración cargados');
     }
   };
 
   const handleClearData = async () => {
-    if (confirm('¿Estás seguro de que quieres borrar todos los datos? Esta acción no se puede deshacer.')) {
+    if (
+      confirm('¿Estás seguro de que quieres borrar todos los datos? Esta acción no se puede deshacer.')
+    ) {
       await clearAllData();
       await refreshData();
-      alert('Todos los datos han sido borrados');
     }
   };
 
-  const handleCurrencyChange = async (currencyCode: string) => {
-    await updateProfile({ currency: currencyCode });
-    setShowCurrencyModal(false);
-  };
+  const currentCurrency =
+    currencies.find((c) => c.code === data.profile.currency) || currencies[0];
 
-  const currentCurrency = currencies.find(c => c.code === data.profile.currency) || currencies[0];
+  const MenuRow = ({
+    icon: Icon,
+    tone,
+    title,
+    subtitle,
+    onClick,
+  }: {
+    icon: typeof User;
+    tone: string;
+    title: string;
+    subtitle: string;
+    onClick?: () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="pressable flex w-full items-center gap-3 border-b border-slate-100 p-4 last:border-0"
+    >
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
+        <Icon size={18} strokeWidth={1.75} />
+      </div>
+      <div className="flex-1 text-left">
+        <p className="font-medium text-slate-900">{title}</p>
+        <p className="text-sm text-slate-500">{subtitle}</p>
+      </div>
+      <ChevronRight size={18} className="text-slate-400" strokeWidth={1.75} />
+    </button>
+  );
 
   return (
-    <div className="pb-20">
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Perfil</h1>
+    <div>
+      <div className="px-5 pt-6 pb-4">
+        <h1 className="mb-6 text-2xl font-bold tracking-tight text-slate-900">Perfil</h1>
 
-        <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg mb-6">
+        <div className="mb-6 rounded-[28px] bg-gradient-to-br from-blue-500 via-violet-500 to-violet-600 p-6 text-white shadow-[0_16px_40px_rgba(124,58,237,0.3)]">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-2xl">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur-md">
               {data.profile.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-bold">{data.profile.name}</h2>
-              <p className="text-sm opacity-90">{data.profile.email || 'usuario@velora.app'}</p>
+              <h2 className="text-xl font-bold tracking-tight">{data.profile.name}</h2>
+              <p className="text-sm text-white/90">
+                {data.profile.email || 'usuario@velora.app'}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 px-2">
-            Configuración
-          </h3>
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <button className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <User size={20} className="text-purple-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Información Personal</p>
-                <p className="text-sm text-gray-500">Editar nombre y email</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
+        <Section title="Configuración">
+          <MenuRow
+            icon={User}
+            tone="bg-violet-100 text-violet-600"
+            title="Información Personal"
+            subtitle="Editar nombre y email"
+          />
+          <MenuRow
+            icon={CircleDollarSign}
+            tone="bg-emerald-100 text-emerald-600"
+            title="Moneda"
+            subtitle={currentCurrency.name}
+            onClick={() => setShowCurrencyModal(true)}
+          />
+          <MenuRow
+            icon={Bell}
+            tone="bg-sky-100 text-sky-600"
+            title="Notificaciones"
+            subtitle="Gestionar alertas"
+          />
+        </Section>
 
-            <button 
-              onClick={() => setShowCurrencyModal(true)}
-              className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <span className="text-xl">{currentCurrency.symbol}</span>
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Moneda</p>
-                <p className="text-sm text-gray-500">{currentCurrency.name}</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
+        <Section title="Datos">
+          <MenuRow
+            icon={Download}
+            tone="bg-emerald-100 text-emerald-600"
+            title="Exportar Datos"
+            subtitle="Descargar backup JSON"
+            onClick={handleExport}
+          />
+          <MenuRow
+            icon={Upload}
+            tone="bg-sky-100 text-sky-600"
+            title="Importar Datos"
+            subtitle="Restaurar desde backup"
+            onClick={handleImport}
+          />
+          <MenuRow
+            icon={Theater}
+            tone="bg-amber-100 text-amber-600"
+            title="Cargar Datos Demo"
+            subtitle="Para pruebas"
+            onClick={handleLoadDemo}
+          />
+        </Section>
 
-            <button className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Bell size={20} className="text-blue-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Notificaciones</p>
-                <p className="text-sm text-gray-500">Gestionar alertas</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-          </div>
-        </div>
+        <Section title="Soporte">
+          <MenuRow
+            icon={HelpCircle}
+            tone="bg-orange-100 text-orange-600"
+            title="Ayuda & Soporte"
+            subtitle="Centro de ayuda"
+          />
+          <MenuRow
+            icon={Shield}
+            tone="bg-slate-100 text-slate-600"
+            title="Seguridad & Privacidad"
+            subtitle="Gestionar permisos"
+          />
+        </Section>
 
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 px-2">
-            Datos
-          </h3>
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <button 
-              onClick={handleExport}
-              className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <Download size={20} className="text-green-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Exportar Datos</p>
-                <p className="text-sm text-gray-500">Descargar backup JSON</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-
-            <button 
-              onClick={handleImport}
-              className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-            >
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Upload size={20} className="text-blue-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Importar Datos</p>
-                <p className="text-sm text-gray-500">Restaurar desde backup</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-
-            <button 
-              onClick={handleLoadDemo}
-              className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
-            >
-              <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <span className="text-xl">🎭</span>
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Cargar Datos Demo</p>
-                <p className="text-sm text-gray-500">Para pruebas</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 px-2">
-            Soporte
-          </h3>
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <button className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100">
-              <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                <HelpCircle size={20} className="text-orange-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Ayuda & Soporte</p>
-                <p className="text-sm text-gray-500">Centro de ayuda</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-
-            <button className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors">
-              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                <Shield size={20} className="text-gray-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Seguridad & Privacidad</p>
-                <p className="text-sm text-gray-500">Gestionar permisos</p>
-              </div>
-              <ChevronRight size={20} className="text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        <button 
+        <button
+          type="button"
           onClick={handleClearData}
-          className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 text-red-600 rounded-2xl font-medium hover:bg-red-100 transition-colors mb-4"
+          className="pressable mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-red-50 p-4 font-medium text-red-600"
         >
-          <LogOut size={20} />
+          <Trash2 size={18} strokeWidth={1.75} />
           <span>Borrar Todos los Datos</span>
         </button>
 
-        <div className="text-center text-sm text-gray-400 mt-6">
+        <div className="mt-4 text-center text-sm text-slate-400">
           <p>Velora Finanzas v{data.version}</p>
           <p className="mt-1">Tus datos solo se guardan localmente</p>
         </div>
       </div>
 
-      {showCurrencyModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={() => setShowCurrencyModal(false)}>
-          <div className="bg-white w-full rounded-t-3xl p-6 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Seleccionar Moneda</h3>
-            <div className="space-y-2">
-              {currencies.map((currency) => (
-                <button
-                  key={currency.code}
-                  onClick={() => handleCurrencyChange(currency.code)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-colors ${
-                    data.profile.currency === currency.code
-                      ? 'bg-purple-50 border-2 border-purple-500'
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm">
-                    {currency.symbol}
+      <BottomSheet
+        open={showCurrencyModal}
+        onClose={() => setShowCurrencyModal(false)}
+        title="Seleccionar Moneda"
+      >
+        <div className="space-y-2 pb-2">
+          {currencies.map((currency) => {
+            const selected = data.profile.currency === currency.code;
+            return (
+              <button
+                key={currency.code}
+                type="button"
+                onClick={async () => {
+                  await updateProfile({ currency: currency.code });
+                  setShowCurrencyModal(false);
+                }}
+                className={`pressable flex w-full items-center gap-4 rounded-2xl p-4 ${
+                  selected ? 'bg-violet-50 ring-2 ring-violet-500' : 'bg-slate-50'
+                }`}
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-lg font-semibold text-slate-800 shadow-sm">
+                  {currency.symbol}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-slate-900">{currency.name}</p>
+                  <p className="text-sm text-slate-500">{currency.code}</p>
+                </div>
+                {selected && (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white">
+                    <Check size={14} strokeWidth={2.5} />
                   </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-semibold text-gray-900">{currency.name}</p>
-                    <p className="text-sm text-gray-500">{currency.code}</p>
-                  </div>
-                  {data.profile.currency === currency.code && (
-                    <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowCurrencyModal(false)}
-              className="w-full mt-4 py-3 bg-gray-100 text-gray-700 rounded-2xl font-medium hover:bg-gray-200 transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
+                )}
+              </button>
+            );
+          })}
         </div>
-      )}
+        <button
+          type="button"
+          onClick={() => setShowCurrencyModal(false)}
+          className="pressable mt-2 w-full rounded-2xl bg-slate-100 py-3 font-medium text-slate-700"
+        >
+          Cancelar
+        </button>
+      </BottomSheet>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-6">
+      <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {title}
+      </h3>
+      <div className="glass-card overflow-hidden rounded-[22px]">{children}</div>
     </div>
   );
 }

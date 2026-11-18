@@ -1,31 +1,13 @@
-import { Send, Download, Plus, MoreHorizontal, Eye, CreditCard } from 'lucide-react';
+import { Send, Download, Plus, MoreHorizontal, Eye, EyeOff, Bell, CreditCard } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const categoryColors: Record<string, string> = {
-  'Food & Drink': 'bg-green-100 text-green-600',
-  'Shopping': 'bg-pink-100 text-pink-600',
-  'Transport': 'bg-yellow-100 text-yellow-600',
-  'Entertainment': 'bg-purple-100 text-purple-600',
-  'Bills': 'bg-blue-100 text-blue-600',
-  'Salary': 'bg-green-100 text-green-600',
-  'Other': 'bg-gray-100 text-gray-600',
-};
-
-const categoryIcons: Record<string, string> = {
-  'Food & Drink': '🍽️',
-  'Shopping': '🛍️',
-  'Transport': '🚗',
-  'Entertainment': '🎬',
-  'Bills': '💡',
-  'Salary': '💰',
-  'Other': '📋',
-};
+import { CategoryIcon, categoryStyles } from '../components/icons';
 
 export default function Home() {
   const { data } = useApp();
   const navigate = useNavigate();
+  const [hideBalance, setHideBalance] = useState(false);
 
   const totalBalance = useMemo(() => {
     return data.transactions.reduce((sum, t) => {
@@ -35,133 +17,138 @@ export default function Home() {
     }, 0);
   }, [data.transactions]);
 
-  const recentTransactions = useMemo(() => {
-    return data.transactions.slice(0, 6);
-  }, [data.transactions]);
+  const recentTransactions = useMemo(() => data.transactions.slice(0, 6), [data.transactions]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: data.profile.currency,
     }).format(amount);
-  };
 
   return (
-    <div className="pb-20">
-      <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="px-5 pt-6 pb-4">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold text-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 text-lg font-semibold text-white">
               {data.profile.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm text-gray-500">Hola,</p>
-              <p className="text-lg font-semibold text-gray-900">{data.profile.name}</p>
+              <p className="text-sm text-slate-500">Hola,</p>
+              <p className="text-lg font-semibold tracking-tight text-slate-900">
+                {data.profile.name}
+              </p>
             </div>
           </div>
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <div className="w-6 h-6 text-gray-600">🔔</div>
+          <button
+            type="button"
+            className="pressable rounded-2xl p-2.5 text-slate-600"
+            aria-label="Notificaciones"
+          >
+            <Bell size={22} strokeWidth={1.75} />
           </button>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm opacity-90">Saldo Total</p>
-            <button className="p-1 hover:bg-white/20 rounded-full transition-colors">
-              <Eye size={20} />
+        <div className="rounded-[28px] bg-gradient-to-br from-blue-500 via-violet-500 to-violet-600 p-6 text-white shadow-[0_16px_40px_rgba(124,58,237,0.35)]">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm text-white/90">Saldo Total</p>
+            <button
+              type="button"
+              className="pressable rounded-full p-1.5 hover:bg-white/15"
+              onClick={() => setHideBalance((v) => !v)}
+              aria-label={hideBalance ? 'Mostrar saldo' : 'Ocultar saldo'}
+            >
+              {hideBalance ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
-          <h2 className="text-4xl font-bold mb-1">{formatCurrency(totalBalance)}</h2>
-          <div className="flex items-center gap-2 text-sm opacity-90">
-            <CreditCard size={14} />
-            <span>****3827 • from last month</span>
+          <h2 className="mb-2 text-4xl font-bold tracking-tight">
+            {hideBalance ? '••••••' : formatCurrency(totalBalance)}
+          </h2>
+          <div className="flex items-center gap-2 text-sm text-white/85">
+            <CreditCard size={14} strokeWidth={1.75} />
+            <span>****3827 · este mes</span>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-4">
-        <div className="grid grid-cols-4 gap-3">
-          <button 
-            onClick={() => navigate('/send')}
-            className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Send size={20} className="text-purple-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-700">Enviar</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/receive')}
-            className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <Download size={20} className="text-green-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-700">Recibir</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/topup')}
-            className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <Plus size={20} className="text-blue-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-700">Recargar</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/profile')}
-            className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-              <MoreHorizontal size={20} className="text-gray-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-700">Más</span>
-          </button>
+      <div className="px-5 py-2">
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: 'Enviar', icon: Send, path: '/send', tone: 'bg-violet-100 text-violet-600' },
+            { label: 'Recibir', icon: Download, path: '/receive', tone: 'bg-emerald-100 text-emerald-600' },
+            { label: 'Recargar', icon: Plus, path: '/topup', tone: 'bg-sky-100 text-sky-600' },
+            { label: 'Más', icon: MoreHorizontal, path: '/goals', tone: 'bg-slate-100 text-slate-600' },
+          ].map(({ label, icon: Icon, path, tone }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => navigate(path)}
+              className="pressable flex flex-col items-center gap-2 rounded-2xl p-3"
+            >
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${tone}`}>
+                <Icon size={20} strokeWidth={1.75} />
+              </div>
+              <span className="text-xs font-medium text-slate-700">{label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="px-4 py-2">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Transacciones Recientes</h3>
-          <button className="text-sm text-purple-600 font-medium hover:text-purple-700">
+      <div className="px-5 py-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+            Transacciones Recientes
+          </h3>
+          <button
+            type="button"
+            className="pressable text-sm font-medium text-violet-600"
+            onClick={() => navigate('/analytics')}
+          >
             Ver todo
           </button>
         </div>
 
         {recentTransactions.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
+          <div className="py-12 text-center text-slate-400">
             <p>No hay transacciones aún</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentTransactions.map((transaction) => (
               <button
                 key={transaction.id}
+                type="button"
                 onClick={() => navigate(`/transaction/${transaction.id}`)}
-                className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl hover:bg-gray-50 transition-colors"
+                className="pressable glass-card flex w-full items-center gap-3 rounded-2xl p-3.5 text-left"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${categoryColors[transaction.category] || categoryColors.Other}`}>
-                  {categoryIcons[transaction.category] || categoryIcons.Other}
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
+                    categoryStyles[transaction.category] || categoryStyles.Other
+                  }`}
+                >
+                  <CategoryIcon category={transaction.category} size={20} />
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-medium text-gray-900">{transaction.recipientName || transaction.category}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(transaction.date).toLocaleDateString('es-ES', { 
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-slate-900">
+                    {transaction.recipientName || transaction.category}
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {new Date(transaction.date).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'short',
                       hour: '2-digit',
-                      minute: '2-digit'
+                      minute: '2-digit',
                     })}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                  </p>
-                </div>
+                <p
+                  className={`shrink-0 font-semibold tabular-nums ${
+                    transaction.type === 'income' ? 'text-emerald-600' : 'text-slate-900'
+                  }`}
+                >
+                  {transaction.type === 'income' ? '+' : '-'}
+                  {formatCurrency(transaction.amount)}
+                </p>
               </button>
             ))}
           </div>

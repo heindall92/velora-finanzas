@@ -1,16 +1,7 @@
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-
-const categoryColors: Record<string, string> = {
-  'Food & Drink': 'bg-green-100 text-green-600',
-  'Shopping': 'bg-pink-100 text-pink-600',
-  'Transport': 'bg-yellow-100 text-yellow-600',
-  'Entertainment': 'bg-purple-100 text-purple-600',
-  'Bills': 'bg-blue-100 text-blue-600',
-  'Salary': 'bg-green-100 text-green-600',
-  'Other': 'bg-gray-100 text-gray-600',
-};
+import { CategoryIcon, categoryStyles } from '../components/icons';
 
 export default function TransactionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -21,12 +12,13 @@ export default function TransactionDetail() {
 
   if (!transaction) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-dvh items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500">Transacción no encontrada</p>
+          <p className="text-slate-500">Transacción no encontrada</p>
           <button
+            type="button"
             onClick={() => navigate('/')}
-            className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-xl"
+            className="pressable mt-4 rounded-2xl bg-violet-600 px-6 py-2 text-white"
           >
             Volver al inicio
           </button>
@@ -35,12 +27,11 @@ export default function TransactionDetail() {
     );
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: data.profile.currency,
     }).format(amount);
-  };
 
   const handleDelete = async () => {
     if (confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
@@ -50,41 +41,61 @@ export default function TransactionDetail() {
   };
 
   const statusColors = {
-    completed: 'bg-green-100 text-green-700',
-    pending: 'bg-yellow-100 text-yellow-700',
+    completed: 'bg-emerald-100 text-emerald-700',
+    pending: 'bg-amber-100 text-amber-700',
     failed: 'bg-red-100 text-red-700',
   };
 
+  const statusLabel = {
+    completed: 'Completado',
+    pending: 'Pendiente',
+    failed: 'Fallido',
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white px-4 py-4 border-b border-gray-100">
+    <div className="min-h-dvh bg-slate-50">
+      <div className="border-b border-slate-100 bg-white px-4 py-4">
         <div className="flex items-center justify-between">
-          <button 
+          <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="pressable rounded-xl p-2 text-slate-700"
+            aria-label="Volver"
           >
-            <ChevronLeft size={24} className="text-gray-700" />
+            <ChevronLeft size={24} strokeWidth={1.75} />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Detalles</h1>
-          <button 
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Detalles</h1>
+          <button
+            type="button"
             onClick={handleDelete}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="pressable rounded-xl p-2 text-red-600"
+            aria-label="Eliminar"
           >
-            <Trash2 size={20} />
+            <Trash2 size={20} strokeWidth={1.75} />
           </button>
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="bg-white rounded-3xl p-6 mb-4 shadow-sm">
-          <div className="flex flex-col items-center mb-6">
-            <div className={`w-20 h-20 rounded-full ${categoryColors[transaction.category] || categoryColors.Other} flex items-center justify-center text-3xl mb-4`}>
-              {transaction.recipientName ? transaction.recipientName.charAt(0).toUpperCase() : '💰'}
+      <div className="p-5">
+        <div className="glass-card mb-4 rounded-[28px] p-6">
+          <div className="mb-6 flex flex-col items-center">
+            <div
+              className={`mb-4 flex h-20 w-20 items-center justify-center rounded-full ${
+                categoryStyles[transaction.category] || categoryStyles.Other
+              }`}
+            >
+              {transaction.recipientName ? (
+                <span className="text-3xl font-bold">
+                  {transaction.recipientName.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <CategoryIcon category={transaction.category} size={32} />
+              )}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            <h2 className="mb-1 text-2xl font-bold tracking-tight text-slate-900">
               {transaction.recipientName || transaction.category}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500">
               {new Date(transaction.date).toLocaleDateString('es-ES', {
                 weekday: 'long',
                 year: 'numeric',
@@ -96,85 +107,128 @@ export default function TransactionDetail() {
             </p>
           </div>
 
-          <div className="text-center mb-6">
-            <p className="text-sm text-gray-500 mb-1">Monto</p>
-            <h3 className={`text-4xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
-              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+          <div className="mb-6 text-center">
+            <p className="mb-1 text-sm text-slate-500">Monto</p>
+            <h3
+              className={`text-4xl font-bold tracking-tight tabular-nums ${
+                transaction.type === 'income' ? 'text-emerald-600' : 'text-slate-900'
+              }`}
+            >
+              {transaction.type === 'income' ? '+' : '-'}
+              {formatCurrency(transaction.amount)}
             </h3>
           </div>
 
           {transaction.status && (
-            <div className="flex justify-center mb-4">
-              <span className={`px-4 py-2 rounded-full text-sm font-medium ${statusColors[transaction.status]}`}>
-                {transaction.status === 'completed' ? 'Completado' : 
-                 transaction.status === 'pending' ? 'Pendiente' : 'Fallido'}
+            <div className="flex justify-center">
+              <span
+                className={`rounded-full px-4 py-2 text-sm font-medium ${
+                  statusColors[transaction.status]
+                }`}
+              >
+                {statusLabel[transaction.status]}
               </span>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden mb-4">
-          <div className="p-4 border-b border-gray-100">
-            <p className="text-sm text-gray-500 mb-1">Estado</p>
+        <div className="glass-card mb-4 overflow-hidden rounded-[28px]">
+          <Row label="Estado">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${transaction.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-              <p className="font-medium text-gray-900">
-                {transaction.status === 'completed' ? 'Completado' : 
-                 transaction.status === 'pending' ? 'Pendiente' : 'Fallido'}
-              </p>
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  transaction.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'
+                }`}
+              />
+              <span className="font-medium text-slate-900">
+                {transaction.status ? statusLabel[transaction.status] : 'Completado'}
+              </span>
             </div>
-          </div>
-
-          <div className="p-4 border-b border-gray-100">
-            <p className="text-sm text-gray-500 mb-1">Categoría</p>
-            <p className="font-medium text-gray-900">{transaction.category}</p>
-          </div>
-
-          <div className="p-4 border-b border-gray-100">
-            <p className="text-sm text-gray-500 mb-1">Tipo</p>
-            <p className="font-medium text-gray-900">
-              {transaction.type === 'income' ? 'Ingreso' : 
-               transaction.type === 'expense' ? 'Gasto' : 'Transferencia'}
-            </p>
-          </div>
-
+          </Row>
+          <Row label="Categoría">
+            <span className="font-medium text-slate-900">{transaction.category}</span>
+          </Row>
+          <Row label="Tipo">
+            <span className="font-medium text-slate-900">
+              {transaction.type === 'income'
+                ? 'Ingreso'
+                : transaction.type === 'expense'
+                  ? 'Gasto'
+                  : 'Transferencia'}
+            </span>
+          </Row>
           {transaction.description && (
-            <div className="p-4">
-              <p className="text-sm text-gray-500 mb-1">Descripción</p>
-              <p className="font-medium text-gray-900">{transaction.description}</p>
-            </div>
+            <Row label="Descripción" last>
+              <span className="font-medium text-slate-900">{transaction.description}</span>
+            </Row>
           )}
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <h4 className="font-semibold text-gray-900 mb-4">Detalles</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-500">ID de transacción</span>
-              <span className="font-mono text-sm text-gray-900">#{transaction.id.slice(0, 8)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Fecha</span>
-              <span className="text-gray-900">
-                {new Date(transaction.date).toLocaleDateString('es-ES')}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Hora</span>
-              <span className="text-gray-900">
-                {new Date(transaction.date).toLocaleTimeString('es-ES', { 
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Total</span>
-              <span className="font-semibold text-gray-900">{formatCurrency(transaction.amount)}</span>
-            </div>
+        <div className="glass-card rounded-[28px] p-6">
+          <h4 className="mb-4 font-semibold text-slate-900">Detalles</h4>
+          <div className="space-y-3 text-sm">
+            <DetailRow
+              label="ID de transacción"
+              value={`#${transaction.id.slice(0, 8)}`}
+              mono
+            />
+            <DetailRow
+              label="Fecha"
+              value={new Date(transaction.date).toLocaleDateString('es-ES')}
+            />
+            <DetailRow
+              label="Hora"
+              value={new Date(transaction.date).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            />
+            <DetailRow label="Total" value={formatCurrency(transaction.amount)} bold />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  children,
+  last,
+}: {
+  label: string;
+  children: React.ReactNode;
+  last?: boolean;
+}) {
+  return (
+    <div className={`p-4 ${last ? '' : 'border-b border-slate-100'}`}>
+      <p className="mb-1 text-sm text-slate-500">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+  mono,
+  bold,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  bold?: boolean;
+}) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span className="text-slate-500">{label}</span>
+      <span
+        className={`text-right text-slate-900 ${mono ? 'font-mono text-sm' : ''} ${
+          bold ? 'font-semibold' : ''
+        }`}
+      >
+        {value}
+      </span>
     </div>
   );
 }
