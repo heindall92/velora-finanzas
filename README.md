@@ -2,7 +2,7 @@
 
 Aplicación web de finanzas personales moderna y funcional, construida con React, TypeScript y Tailwind CSS. Diseñada para ayudarte a gestionar tu dinero de manera inteligente y visual.
 
-![Velora Finanzas](./docs/preview.jpg)
+![Velora Finanzas](./docs/mockup/original-design.jpg)
 
 ## ✨ Características
 
@@ -30,26 +30,46 @@ Aplicación web de finanzas personales moderna y funcional, construida con React
 
 ## 🚀 Capturas de Pantalla
 
-### Pantalla Principal
-![Home](./docs/screenshots/home.png)
-
-### Análisis
-![Analytics](./docs/screenshots/analytics.png)
-
-### Mis Tarjetas
-![Cards](./docs/screenshots/cards.png)
-
-### Enviar Dinero
-![Send Money](./docs/screenshots/send.png)
-
-### Objetivos
-![Goals](./docs/screenshots/goals.png)
-
-### Detalles de Transacción
-![Transaction Details](./docs/screenshots/transaction.png)
-
-### Perfil y Configuración
-![Profile](./docs/screenshots/profile.png)
+<table>
+  <tr>
+    <td width="33%">
+      <img src="./docs/screenshots/home.png" alt="Pantalla Principal" />
+      <p align="center"><strong>Pantalla Principal</strong><br/>Balance total y transacciones recientes</p>
+    </td>
+    <td width="33%">
+      <img src="./docs/screenshots/analytics.png" alt="Análisis" />
+      <p align="center"><strong>Análisis</strong><br/>Gráfico de gastos y categorías top</p>
+    </td>
+    <td width="33%">
+      <img src="./docs/screenshots/cards.png" alt="Mis Tarjetas" />
+      <p align="center"><strong>Mis Tarjetas</strong><br/>Gestión de tarjetas y transferencias</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <img src="./docs/screenshots/goals.png" alt="Objetivos" />
+      <p align="center"><strong>Objetivos</strong><br/>Metas de ahorro con progreso visual</p>
+    </td>
+    <td width="33%">
+      <img src="./docs/screenshots/send.png" alt="Enviar Dinero" />
+      <p align="center"><strong>Enviar Dinero</strong><br/>Formulario de transferencia</p>
+    </td>
+    <td width="33%">
+      <img src="./docs/screenshots/transaction.png" alt="Detalles" />
+      <p align="center"><strong>Detalles de Transacción</strong><br/>Vista completa de cada movimiento</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <img src="./docs/screenshots/profile.png" alt="Perfil" />
+      <p align="center"><strong>Perfil y Configuración</strong><br/>Ajustes y gestión de datos</p>
+    </td>
+    <td width="66%" colspan="2">
+      <img src="./docs/mockup/original-design.jpg" alt="Mockup Original" />
+      <p align="center"><strong>Diseño Original (Mockup)</strong><br/>Referencia de diseño implementado</p>
+    </td>
+  </tr>
+</table>
 
 ## 🛠️ Tecnologías
 
