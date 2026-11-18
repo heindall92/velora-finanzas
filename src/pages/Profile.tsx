@@ -7,12 +7,12 @@ import {
   Trash2,
   Download,
   Upload,
-  Theater,
   Check,
   CircleDollarSign,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { exportData, importData, loadDemoData, clearAllData } from '../storage';
+import { exportData, importData, clearAllData } from '../storage';
 import { useState } from 'react';
 import BottomSheet from '../components/BottomSheet';
 
@@ -25,6 +25,10 @@ const currencies = [
 export default function Profile() {
   const { data, updateProfile, refreshData } = useApp();
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [showPersonalModal, setShowPersonalModal] = useState(false);
+  const [firstName, setFirstName] = useState(data.profile.firstName || '');
+  const [lastName, setLastName] = useState(data.profile.lastName || '');
+  const [budget, setBudget] = useState(String(data.profile.budget || ''));
 
   const handleExport = async () => {
     try {
@@ -44,7 +48,7 @@ export default function Profile() {
   const handleImport = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'application/json';
+    input.accept = 'application/json,.json';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -59,20 +63,34 @@ export default function Profile() {
     input.click();
   };
 
-  const handleLoadDemo = async () => {
-    if (confirm('¿Cargar datos de demostración? Esto reemplazará tus datos actuales.')) {
-      await loadDemoData();
-      await refreshData();
-    }
-  };
-
   const handleClearData = async () => {
     if (
-      confirm('¿Estás seguro de que quieres borrar todos los datos? Esta acción no se puede deshacer.')
+      confirm(
+        '¿Estás seguro de que quieres borrar todos los datos? Volverás a la pantalla inicial.'
+      )
     ) {
       await clearAllData();
       await refreshData();
     }
+  };
+
+  const openPersonal = () => {
+    setFirstName(data.profile.firstName || '');
+    setLastName(data.profile.lastName || '');
+    setBudget(String(data.profile.budget || ''));
+    setShowPersonalModal(true);
+  };
+
+  const savePersonal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const budgetValue = parseFloat(budget.replace(',', '.')) || 0;
+    await updateProfile({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+      budget: budgetValue,
+    });
+    setShowPersonalModal(false);
   };
 
   const currentCurrency =
@@ -99,28 +117,34 @@ export default function Profile() {
       <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
         <Icon size={18} strokeWidth={1.75} />
       </div>
-      <div className="flex-1 text-left">
+      <div className="min-w-0 flex-1 text-left">
         <p className="font-medium text-slate-900">{title}</p>
-        <p className="text-sm text-slate-500">{subtitle}</p>
+        <p className="truncate text-sm text-slate-500">{subtitle}</p>
       </div>
-      <ChevronRight size={18} className="text-slate-400" strokeWidth={1.75} />
+      <ChevronRight size={18} className="shrink-0 text-slate-400" strokeWidth={1.75} />
     </button>
   );
 
   return (
     <div>
-      <div className="px-5 pt-6 pb-4">
+      <div className="mx-auto max-w-2xl px-5 pt-6 pb-4 lg:max-w-3xl">
         <h1 className="mb-6 text-2xl font-bold tracking-tight text-slate-900">Perfil</h1>
 
-        <div className="mb-6 rounded-[28px] bg-gradient-to-br from-blue-500 via-violet-500 to-violet-600 p-6 text-white shadow-[0_16px_40px_rgba(124,58,237,0.3)]">
+        <div className="mb-6 rounded-[28px] bg-gradient-to-br from-sky-400 via-blue-500 to-blue-700 p-6 text-white shadow-[0_16px_40px_rgba(0,102,255,0.3)]">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur-md">
-              {data.profile.name.charAt(0).toUpperCase()}
+              {(data.profile.firstName || data.profile.name || '?').charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h2 className="text-xl font-bold tracking-tight">{data.profile.name}</h2>
+            <div className="min-w-0">
+              <h2 className="truncate text-xl font-bold tracking-tight">
+                {data.profile.name || 'Tu perfil'}
+              </h2>
               <p className="text-sm text-white/90">
-                {data.profile.email || 'usuario@velora.app'}
+                Presupuesto:{' '}
+                {new Intl.NumberFormat('es-ES', {
+                  style: 'currency',
+                  currency: data.profile.currency,
+                }).format(data.profile.budget || 0)}
               </p>
             </div>
           </div>
@@ -129,9 +153,10 @@ export default function Profile() {
         <Section title="Configuración">
           <MenuRow
             icon={User}
-            tone="bg-violet-100 text-violet-600"
+            tone="bg-blue-100 text-blue-600"
             title="Información Personal"
-            subtitle="Editar nombre y email"
+            subtitle="Nombre, apellidos y presupuesto"
+            onClick={openPersonal}
           />
           <MenuRow
             icon={CircleDollarSign}
@@ -160,15 +185,8 @@ export default function Profile() {
             icon={Upload}
             tone="bg-sky-100 text-sky-600"
             title="Importar Datos"
-            subtitle="Restaurar desde backup"
+            subtitle="Restaurar desde backup JSON"
             onClick={handleImport}
-          />
-          <MenuRow
-            icon={Theater}
-            tone="bg-amber-100 text-amber-600"
-            title="Cargar Datos Demo"
-            subtitle="Para pruebas"
-            onClick={handleLoadDemo}
           />
         </Section>
 
@@ -183,7 +201,7 @@ export default function Profile() {
             icon={Shield}
             tone="bg-slate-100 text-slate-600"
             title="Seguridad & Privacidad"
-            subtitle="Gestionar permisos"
+            subtitle="Datos solo en tu dispositivo"
           />
         </Section>
 
@@ -198,9 +216,72 @@ export default function Profile() {
 
         <div className="mt-4 text-center text-sm text-slate-400">
           <p>Velora Finanzas v{data.version}</p>
-          <p className="mt-1">Tus datos solo se guardan localmente</p>
+          <p className="mt-1">Sin datos bancarios · Solo almacenamiento local</p>
         </div>
       </div>
+
+      <BottomSheet
+        open={showPersonalModal}
+        onClose={() => setShowPersonalModal(false)}
+        title="Información Personal"
+      >
+        <form onSubmit={savePersonal} className="space-y-4 pb-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-600">Nombre</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-600">Apellidos</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-600">
+              Presupuesto mensual
+            </label>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
+            />
+            <p className="mt-2 text-xs text-slate-500">
+              No pedimos dirección ni datos bancarios.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowPersonalModal(false)}
+              className="pressable flex-1 rounded-2xl bg-slate-100 py-3 font-medium text-slate-700"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="pressable flex-1 rounded-2xl bg-blue-600 py-3 font-medium text-white"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </BottomSheet>
 
       <BottomSheet
         open={showCurrencyModal}
@@ -219,7 +300,7 @@ export default function Profile() {
                   setShowCurrencyModal(false);
                 }}
                 className={`pressable flex w-full items-center gap-4 rounded-2xl p-4 ${
-                  selected ? 'bg-violet-50 ring-2 ring-violet-500' : 'bg-slate-50'
+                  selected ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-slate-50'
                 }`}
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-lg font-semibold text-slate-800 shadow-sm">
@@ -230,7 +311,7 @@ export default function Profile() {
                   <p className="text-sm text-slate-500">{currency.code}</p>
                 </div>
                 {selected && (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-white">
                     <Check size={14} strokeWidth={2.5} />
                   </div>
                 )}
@@ -241,8 +322,9 @@ export default function Profile() {
         <button
           type="button"
           onClick={() => setShowCurrencyModal(false)}
-          className="pressable mt-2 w-full rounded-2xl bg-slate-100 py-3 font-medium text-slate-700"
+          className="pressable mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 py-3 font-medium text-slate-700"
         >
+          <X size={16} />
           Cancelar
         </button>
       </BottomSheet>

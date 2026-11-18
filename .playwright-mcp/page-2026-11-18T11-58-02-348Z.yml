@@ -1,0 +1,40 @@
+- generic [ref=f4e4]:
+  - generic [ref=f4e122]:
+    - generic [ref=f4e123]:
+      - heading "Análisis" [level=1] [ref=f4e124]
+      - button "Calendario" [ref=f4e125]
+    - generic [ref=f4e128]:
+      - button "Semana" [ref=f4e129]
+      - button "Mes" [ref=f4e130]
+      - button "Año" [ref=f4e131]
+    - generic [ref=f4e132]:
+      - paragraph [ref=f4e133]: Gasto Total
+      - heading "91,28 BRL" [level=2] [ref=f4e134]
+      - paragraph [ref=f4e135]: +8.2% vs período anterior
+    - heading "Categorías Principales" [level=3] [ref=f4e139]
+    - generic [ref=f4e140]:
+      - generic [ref=f4e142]:
+        - paragraph [ref=f4e148]: Shopping
+        - generic [ref=f4e151]:
+          - paragraph [ref=f4e152]: 65,30 BRL
+          - paragraph [ref=f4e153]: 72%
+      - generic [ref=f4e155]:
+        - paragraph [ref=f4e163]: Entertainment
+        - generic [ref=f4e166]:
+          - paragraph [ref=f4e167]: 15,99 BRL
+          - paragraph [ref=f4e168]: 18%
+      - generic [ref=f4e170]:
+        - paragraph [ref=f4e178]: Food & Drink
+        - generic [ref=f4e181]:
+          - paragraph [ref=f4e182]: 9,99 BRL
+          - paragraph [ref=f4e183]: 11%
+  - navigation [ref=f4e100]:
+    - generic [ref=f4e102]:
+      - link "Inicio" [ref=f4e103] [cursor=pointer]:
+        - /url: /velora-finanzas
+      - link "Análisis" [active] [ref=f4e108] [cursor=pointer]:
+        - /url: /velora-finanzas/analytics
+      - link "Tarjetas" [ref=f4e112] [cursor=pointer]:
+        - /url: /velora-finanzas/cards
+      - link "Perfil" [ref=f4e116] [cursor=pointer]:
+        - /url: /velora-finanzas/profile

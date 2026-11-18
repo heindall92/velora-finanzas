@@ -23,7 +23,7 @@ export default function BottomNav() {
                 key={path}
                 to={path}
                 className={`pressable flex min-w-[64px] flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-colors ${
-                  active ? 'text-violet-600' : 'text-slate-400'
+                  active ? 'text-blue-600' : 'text-slate-400'
                 }`}
               >
                 <Icon size={22} strokeWidth={active ? 2.25 : 1.75} />

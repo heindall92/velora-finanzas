@@ -1,0 +1,56 @@
+- generic [ref=e4]:
+  - generic [ref=e193]:
+    - generic [ref=e194]:
+      - generic [ref=e195]:
+        - generic [ref=e196]:
+          - generic [ref=e197]: A
+          - generic [ref=e198]:
+            - paragraph [ref=e199]: Hola,
+            - paragraph [ref=e200]: Ayesha Rahman
+        - button "Notificaciones" [ref=e201]
+      - generic [ref=e205]:
+        - generic [ref=e206]:
+          - paragraph [ref=e207]: Saldo Total
+          - button "Ocultar saldo" [ref=e208]
+        - heading "2408,72 BRL" [level=2] [ref=e212]
+        - generic [ref=e213]: "****3827 · este mes"
+    - generic [ref=e218]:
+      - button "Enviar" [ref=e219]
+      - button "Recibir" [ref=e225]
+      - button "Recargar" [ref=e231]
+      - button "Más" [ref=e235]
+    - generic [ref=e242]:
+      - generic [ref=e243]:
+        - heading "Transacciones Recientes" [level=3] [ref=e244]
+        - button "Ver todo" [ref=e245]
+      - generic [ref=e246]:
+        - button [ref=e247]:
+          - generic [ref=e254]:
+            - paragraph [ref=e255]: Starbucks
+            - paragraph [ref=e256]: 18 nov, 11:56
+          - paragraph [ref=e257]: "-9,99 BRL"
+        - button [ref=e258]:
+          - generic [ref=e263]:
+            - paragraph [ref=e264]: Amazon
+            - paragraph [ref=e265]: 17 nov, 11:56
+          - paragraph [ref=e266]: "-65,30 BRL"
+        - button [ref=e267]:
+          - generic [ref=e274]:
+            - paragraph [ref=e275]: Netflix
+            - paragraph [ref=e276]: 16 nov, 11:56
+          - paragraph [ref=e277]: "-15,99 BRL"
+        - button [ref=e278]:
+          - generic [ref=e283]:
+            - paragraph [ref=e284]: Salary
+            - paragraph [ref=e285]: 15 nov, 11:56
+          - paragraph [ref=e286]: +2500,00 BRL
+  - navigation [ref=e61]:
+    - generic [ref=e63]:
+      - link "Inicio" [active] [ref=e64] [cursor=pointer]:
+        - /url: /velora-finanzas
+      - link "Análisis" [ref=e69] [cursor=pointer]:
+        - /url: /velora-finanzas/analytics
+      - link "Tarjetas" [ref=e73] [cursor=pointer]:
+        - /url: /velora-finanzas/cards
+      - link "Perfil" [ref=e77] [cursor=pointer]:
+        - /url: /velora-finanzas/profile

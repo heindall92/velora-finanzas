@@ -5,8 +5,8 @@ Este documento compara el diseño del mockup original con la implementación fin
 ## ✅ Fidelidad Visual
 
 ### Colores y Gradientes
-- ✅ **Gradiente principal**: Azul-violeta (#8b5cf6) implementado exactamente como en el mockup
-- ✅ **Tarjeta de balance**: Gradiente `from-blue-500 via-purple-500 to-purple-600`
+- ✅ **Gradiente principal**: Azul-violeta (#0066FF) implementado exactamente como en el mockup
+- ✅ **Tarjeta de balance**: Gradiente `from-blue-500 via-blue-500 to-blue-600`
 - ✅ **Tarjeta física**: Mismo gradiente con efecto VISA
 - ✅ **Objetivo destacado**: Gradiente azul-cian (`from-blue-400 to-cyan-500`)
 - ✅ **Fondos**: Gris suave (#f9fafb) para el fondo general

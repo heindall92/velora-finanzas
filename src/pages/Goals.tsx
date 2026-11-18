@@ -32,7 +32,7 @@ export default function Goals() {
       targetAmount: parseFloat(newGoal.targetAmount),
       currentAmount: parseFloat(newGoal.currentAmount) || 0,
       description: newGoal.description,
-      color: 'from-violet-400 to-fuchsia-500',
+      color: 'from-sky-400 to-blue-600',
       icon: 'target',
     });
 
@@ -58,7 +58,7 @@ export default function Goals() {
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="pressable rounded-2xl bg-violet-100 p-2.5 text-violet-600"
+            className="pressable rounded-2xl bg-blue-100 p-2.5 text-blue-600"
             aria-label="Nuevo objetivo"
           >
             <Plus size={22} strokeWidth={2} />
@@ -128,9 +128,9 @@ export default function Goals() {
             </div>
           </div>
         ) : (
-          <div className="mb-6 rounded-[28px] bg-gradient-to-br from-violet-100 to-sky-100 p-8 text-center">
+          <div className="mb-6 rounded-[28px] bg-gradient-to-br from-sky-100 to-blue-100 p-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
-              <Target size={28} className="text-violet-600" strokeWidth={1.75} />
+              <Target size={28} className="text-blue-600" strokeWidth={1.75} />
             </div>
             <h3 className="mb-2 text-xl font-bold tracking-tight text-slate-900">
               Crea tu primer objetivo
@@ -141,7 +141,7 @@ export default function Goals() {
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="pressable rounded-2xl bg-violet-600 px-6 py-3 font-medium text-white"
+              className="pressable rounded-2xl bg-blue-600 px-6 py-3 font-medium text-white"
             >
               Crear Objetivo
             </button>
@@ -159,7 +159,7 @@ export default function Goals() {
                   <div className="mb-3 flex items-start gap-3">
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${
-                        goal.color || 'from-violet-400 to-fuchsia-500'
+                        goal.color || 'from-sky-400 to-blue-600'
                       } text-white`}
                     >
                       <GoalIcon name={goal.name} size={20} />
@@ -183,7 +183,7 @@ export default function Goals() {
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                       <div
-                        className="h-2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 transition-[width] duration-500"
+                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-500 transition-[width] duration-500"
                         style={{
                           width: `${Math.min(
                             (goal.currentAmount / goal.targetAmount) * 100,
@@ -196,7 +196,7 @@ export default function Goals() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-violet-600">
+                    <span className="text-sm font-medium text-blue-600">
                       {((goal.currentAmount / goal.targetAmount) * 100).toFixed(0)}% completado
                     </span>
                     <button
@@ -207,7 +207,7 @@ export default function Goals() {
                           handleContribute(goal.id, parseFloat(amount));
                         }
                       }}
-                      className="pressable rounded-xl bg-violet-50 px-4 py-2 text-sm font-medium text-violet-600"
+                      className="pressable rounded-xl bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600"
                     >
                       + Añadir
                     </button>
@@ -231,7 +231,7 @@ export default function Goals() {
               value={newGoal.name}
               onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
               placeholder="ej. Vacaciones, Nuevo auto..."
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-violet-500 focus:ring-2"
+              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
               required
             />
           </Field>
@@ -243,7 +243,7 @@ export default function Goals() {
               value={newGoal.targetAmount}
               onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-violet-500 focus:ring-2"
+              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
               required
             />
           </Field>
@@ -255,7 +255,7 @@ export default function Goals() {
               value={newGoal.currentAmount}
               onChange={(e) => setNewGoal({ ...newGoal, currentAmount: e.target.value })}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-violet-500 focus:ring-2"
+              className="w-full rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
             />
           </Field>
           <Field label="Descripción (opcional)">
@@ -264,7 +264,7 @@ export default function Goals() {
               onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
               placeholder="¿Para qué es este objetivo?"
               rows={3}
-              className="w-full resize-none rounded-2xl bg-slate-50 p-4 outline-none ring-violet-500 focus:ring-2"
+              className="w-full resize-none rounded-2xl bg-slate-50 p-4 outline-none ring-blue-500 focus:ring-2"
             />
           </Field>
           <div className="flex gap-3 pt-1">
@@ -277,7 +277,7 @@ export default function Goals() {
             </button>
             <button
               type="submit"
-              className="pressable flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-500 py-3 font-medium text-white"
+              className="pressable flex-1 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-400 py-3 font-medium text-white"
             >
               Crear
             </button>

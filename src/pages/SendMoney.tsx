@@ -61,7 +61,7 @@ export default function SendMoney() {
         <div className="glass-card mb-6 rounded-[28px] p-6">
           <label className="mb-2 block text-sm font-medium text-slate-500">Destinatario</label>
           <div className="mb-6 flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 text-lg font-semibold text-white">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-lg font-semibold text-white">
               {recipient ? recipient.charAt(0).toUpperCase() : '?'}
             </div>
             <input
@@ -76,7 +76,7 @@ export default function SendMoney() {
 
           <label className="mb-2 block text-sm font-medium text-slate-500">Monto</label>
           <div className="relative mb-4">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-bold tracking-tight text-violet-600">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-bold tracking-tight text-blue-600">
               {currencySymbol}
             </span>
             <input
@@ -86,7 +86,7 @@ export default function SendMoney() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-2xl bg-slate-50 py-4 pl-16 pr-4 text-3xl font-bold tracking-tight text-slate-900 outline-none ring-violet-500 focus:ring-2"
+              className="w-full rounded-2xl bg-slate-50 py-4 pl-16 pr-4 text-3xl font-bold tracking-tight text-slate-900 outline-none ring-blue-500 focus:ring-2"
               required
             />
           </div>
@@ -97,7 +97,7 @@ export default function SendMoney() {
                 key={quickAmount}
                 type="button"
                 onClick={() => setAmount(String(quickAmount))}
-                className="pressable flex-1 rounded-xl bg-violet-50 px-4 py-3 font-medium text-violet-600"
+                className="pressable flex-1 rounded-xl bg-blue-50 px-4 py-3 font-medium text-blue-600"
               >
                 {currencySymbol}
                 {quickAmount}
@@ -109,7 +109,7 @@ export default function SendMoney() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as TransactionCategory)}
-            className="mb-4 w-full rounded-2xl bg-slate-50 p-4 font-medium text-slate-900 outline-none ring-violet-500 focus:ring-2"
+            className="mb-4 w-full rounded-2xl bg-slate-50 p-4 font-medium text-slate-900 outline-none ring-blue-500 focus:ring-2"
           >
             <option value="Other">Otro</option>
             <option value="Food & Drink">Comida y Bebida</option>
@@ -128,13 +128,13 @@ export default function SendMoney() {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Agregar una nota..."
             rows={3}
-            className="w-full resize-none rounded-2xl bg-slate-50 p-4 text-slate-900 outline-none ring-violet-500 focus:ring-2"
+            className="w-full resize-none rounded-2xl bg-slate-50 p-4 text-slate-900 outline-none ring-blue-500 focus:ring-2"
           />
         </div>
 
         <button
           type="submit"
-          className="pressable w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-500 py-4 text-lg font-semibold text-white shadow-lg shadow-violet-500/25"
+          className="pressable w-full rounded-2xl bg-gradient-to-r from-blue-600 to-sky-400 py-4 text-lg font-semibold text-white shadow-lg shadow-blue-500/25"
         >
           Enviar Ahora
         </button>

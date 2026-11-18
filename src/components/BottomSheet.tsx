@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useEffect, useId, useRef } from 'react';
 
 interface BottomSheetProps {
   open: boolean;
@@ -8,69 +7,57 @@ interface BottomSheetProps {
   title?: string;
 }
 
+/**
+ * Modal accesible con <dialog native>.
+ * Modern Web Guidance `dialog`: showModal(), Esc nativo, sin role/aria-modal manuales.
+ */
 export default function BottomSheet({ open, onClose, children, title }: BottomSheetProps) {
-  const reduceMotion = useReducedMotion();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open, onClose]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (open) {
+      if (!dialog.open) dialog.showModal();
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
 
   return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <motion.button
-            type="button"
-            aria-label="Cerrar"
-            className="absolute inset-0 bg-black/40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={
-              reduceMotion
-                ? { duration: 0.15 }
-                : { type: 'spring', bounce: 0, duration: 0.35 }
-            }
-            onClick={onClose}
-          />
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={title}
-            className="relative w-full max-w-md rounded-t-[28px] bg-white shadow-2xl"
-            style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
-            initial={reduceMotion ? { opacity: 0 } : { y: '100%' }}
-            animate={reduceMotion ? { opacity: 1 } : { y: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { y: '100%' }}
-            transition={
-              reduceMotion
-                ? { duration: 0.2 }
-                : { type: 'spring', bounce: 0.15, duration: 0.45 }
-            }
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="h-1 w-10 rounded-full bg-slate-300" />
-            </div>
-            {title && (
-              <h3 className="px-6 pb-3 text-xl font-semibold tracking-tight text-slate-900">
-                {title}
-              </h3>
-            )}
-            <div className="px-6 pb-2">{children}</div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+    <dialog
+      ref={dialogRef}
+      className="sheet-dialog"
+      aria-labelledby={title ? titleId : undefined}
+      onClose={onClose}
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      onClick={(e) => {
+        // Light dismiss: click outside the panel
+        const rect = dialogRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const { clientX: x, clientY: y } = e;
+        const outside =
+          x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
+        if (outside) onClose();
+      }}
+    >
+      <div
+        className="sheet-panel"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sheet-handle sm:hidden" aria-hidden="true" />
+        {title && (
+          <h3 id={titleId} className="px-6 pb-3 text-xl font-semibold tracking-tight text-slate-900">
+            {title}
+          </h3>
+        )}
+        <div className="px-6 pb-2">{children}</div>
+      </div>
+    </dialog>
   );
 }

@@ -103,7 +103,7 @@ export default function Analytics() {
         datasets: [
           {
             data: values,
-            backgroundColor: 'rgba(139, 92, 246, 0.85)',
+            backgroundColor: 'rgba(0, 102, 255, 0.85)',
             borderRadius: 10,
             barThickness: 22,
           },
@@ -138,7 +138,7 @@ export default function Analytics() {
               onClick={() => setPeriod(p)}
               className={`pressable rounded-full px-5 py-2 text-sm font-medium ${
                 period === p
-                  ? 'bg-violet-600 text-white shadow-md shadow-violet-500/25'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
                   : 'bg-slate-100 text-slate-600'
               }`}
             >
@@ -210,7 +210,7 @@ export default function Analytics() {
                       <p className="font-medium text-slate-900">{category}</p>
                       <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                         <div
-                          className="h-1.5 rounded-full bg-violet-500 transition-[width] duration-300"
+                          className="h-1.5 rounded-full bg-blue-500 transition-[width] duration-300"
                           style={{
                             width: `${percentage}%`,
                             transitionTimingFunction: 'var(--ease-out)',

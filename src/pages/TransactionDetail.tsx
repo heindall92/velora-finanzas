@@ -18,7 +18,7 @@ export default function TransactionDetail() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="pressable mt-4 rounded-2xl bg-violet-600 px-6 py-2 text-white"
+            className="pressable mt-4 rounded-2xl bg-blue-600 px-6 py-2 text-white"
           >
             Volver al inicio
           </button>

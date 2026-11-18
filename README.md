@@ -26,7 +26,7 @@ Aplicación web de finanzas personales moderna y funcional, construida con React
 - Tarjetas con sombras sutiles (sin bordes duros)
 - Iconos consistentes (Lucide React)
 - Transiciones pulidas
-- Paleta de colores violeta/azul
+- Paleta de colores azul eléctrico (#0066FF)
 
 ## 🚀 Capturas de Pantalla
 

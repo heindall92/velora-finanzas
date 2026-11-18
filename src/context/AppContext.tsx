@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { AppData, Transaction, Account, Goal, UserProfile } from '../types';
-import { loadData, saveData } from '../storage';
+import { defaultProfile, loadData, saveData } from '../storage';
 
 interface AppContextType {
   data: AppData;
@@ -15,6 +15,12 @@ interface AppContextType {
   updateGoal: (id: string, goal: Partial<Goal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  completeOnboarding: (input: {
+    firstName: string;
+    lastName: string;
+    budget: number;
+    currency?: string;
+  }) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -25,8 +31,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     transactions: [],
     accounts: [],
     goals: [],
-    profile: { name: 'Usuario', currency: 'EUR', language: 'es' },
-    version: '1.0.0',
+    profile: defaultProfile(),
+    version: '1.1.0',
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,9 +68,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
     await persistData({
       ...data,
-      transactions: data.transactions.map((t) =>
-        t.id === id ? { ...t, ...updates } : t
-      ),
+      transactions: data.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     });
   };
 
@@ -89,9 +93,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateAccount = async (id: string, updates: Partial<Account>) => {
     await persistData({
       ...data,
-      accounts: data.accounts.map((a) =>
-        a.id === id ? { ...a, ...updates } : a
-      ),
+      accounts: data.accounts.map((a) => (a.id === id ? { ...a, ...updates } : a)),
     });
   };
 
@@ -116,9 +118,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateGoal = async (id: string, updates: Partial<Goal>) => {
     await persistData({
       ...data,
-      goals: data.goals.map((g) =>
-        g.id === id ? { ...g, ...updates } : g
-      ),
+      goals: data.goals.map((g) => (g.id === id ? { ...g, ...updates } : g)),
     });
   };
 
@@ -130,9 +130,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
+    const next = { ...data.profile, ...updates };
+    if (updates.firstName !== undefined || updates.lastName !== undefined) {
+      next.name = `${next.firstName} ${next.lastName}`.trim();
+    }
     await persistData({
       ...data,
-      profile: { ...data.profile, ...updates },
+      profile: next,
+    });
+  };
+
+  const completeOnboarding = async (input: {
+    firstName: string;
+    lastName: string;
+    budget: number;
+    currency?: string;
+  }) => {
+    const firstName = input.firstName.trim();
+    const lastName = input.lastName.trim();
+    const fullName = `${firstName} ${lastName}`.trim();
+    const currency = input.currency || data.profile.currency || 'BRL';
+
+    const startingTx: Transaction | null =
+      input.budget > 0
+        ? {
+            id: `start-${Date.now()}`,
+            type: 'income',
+            amount: input.budget,
+            category: 'Other',
+            description: 'Saldo inicial / presupuesto',
+            date: new Date().toISOString(),
+            status: 'completed',
+            recipientName: 'Presupuesto',
+          }
+        : null;
+
+    await persistData({
+      ...data,
+      transactions: startingTx ? [startingTx, ...data.transactions] : data.transactions,
+      profile: {
+        ...data.profile,
+        firstName,
+        lastName,
+        name: fullName,
+        budget: input.budget,
+        currency,
+        onboardingComplete: true,
+      },
     });
   };
 
@@ -151,6 +195,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateGoal,
         deleteGoal,
         updateProfile,
+        completeOnboarding,
         refreshData,
       }}
     >

@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'Velora Finanzas',
         short_name: 'Velora',
         description: 'Aplicación de finanzas personales',
-        theme_color: '#8b5cf6',
+        theme_color: '#0066FF',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [

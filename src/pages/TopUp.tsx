@@ -51,7 +51,7 @@ export default function TopUp() {
       <form onSubmit={handleSubmit} className="p-5">
         <div className="glass-card mb-6 rounded-[28px] p-6">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-violet-600 text-white shadow-lg shadow-violet-500/30">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-700 text-white shadow-lg shadow-blue-500/30">
               <CreditCard size={36} strokeWidth={1.5} />
             </div>
             <h2 className="text-lg font-semibold tracking-tight text-slate-900">
@@ -93,15 +93,15 @@ export default function TopUp() {
 
           <div className="rounded-2xl bg-sky-50 p-4">
             <p className="text-sm text-sky-900">
-              <strong>Nota:</strong> Esta es una aplicación de demostración. El dinero se
-              registrará como un ingreso en tu balance.
+              <strong>Nota:</strong> Se registrará como ingreso en tu saldo. No hay
+              pagos reales ni conexión bancaria.
             </p>
           </div>
         </div>
 
         <button
           type="submit"
-          className="pressable w-full rounded-2xl bg-gradient-to-r from-blue-600 to-violet-500 py-4 text-lg font-semibold text-white shadow-lg shadow-blue-500/25"
+          className="pressable w-full rounded-2xl bg-gradient-to-r from-blue-600 to-sky-400 py-4 text-lg font-semibold text-white shadow-lg shadow-blue-500/25"
         >
           Añadir Dinero
         </button>

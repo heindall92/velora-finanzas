@@ -1,6 +1,6 @@
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
-export type TransactionCategory = 
+export type TransactionCategory =
   | 'Food & Drink'
   | 'Shopping'
   | 'Transport'
@@ -51,10 +51,15 @@ export interface Goal {
 
 export interface UserProfile {
   name: string;
+  firstName: string;
+  lastName: string;
   email?: string;
   currency: string;
   language: string;
   avatar?: string;
+  /** Presupuesto mensual (sin datos bancarios) */
+  budget: number;
+  onboardingComplete: boolean;
 }
 
 export interface AppData {
