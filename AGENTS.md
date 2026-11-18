@@ -23,7 +23,9 @@ Las skills viven en `.agents/skills/`. Léelas antes de inventar patrones legacy
 - App de finanzas personales PWA: React + TypeScript + Vite + Tailwind.
 - Datos solo locales (IndexedDB / localforage). Sin backend ni telemetría.
 - Usuario final en Brasil y en **iPhone**: UI en **portugués (pt-BR) por defecto**, español como segunda lengua. Toda cadena pasa por `src/lib/i18n.ts` (el tipo obliga a traducir ambas). Monedas: BRL (default), USD, EUR. Importes siempre con `formatMoney`/`parseAmount` (`src/lib/money.ts`), nunca `parseFloat`.
-- Onboarding: nombre, apellidos, moneda, presupuesto (opcional) y saldo actual (opcional). Sin datos bancarios ni dirección. El presupuesto es un límite de gasto, **no** un saldo.
+- Onboarding: nombre, apellidos, moneda, presupuesto (opcional) y banco principal + saldo (opcional). Sin datos bancarios reales ni dirección. El presupuesto es un límite de gasto, **no** un saldo.
+- Modelo: cuentas (`Account`: corriente, tarjeta de crédito, ahorro, efectivo). Saldo de cuenta = apertura + movimientos. Una tarjeta con factura tiene saldo **negativo** (pasivo). Pagar la factura o mover dinero es una **transferencia** (`type: 'transfer'`), que nunca cuenta como gasto ni ingreso. Patrimônio = activos − pasivos. Límites mensuales por categoría en `profile.categoryLimits`.
+- Navegación móvil (como las apps brasileñas que conoce el usuario): Início · Extrato · + · Gastos · Contas. Metas se abre desde Contas e Início.
 - Seguridad: PIN opcional con cifrado en reposo (`src/lib/vault.ts`), CSP estricta, sin scripts de terceros. Ver `SECURITY.md`. No añadir dependencias de red ni analítica.
 - Exportar / importar JSON siempre disponible.
 - Responsive: móvil y escritorio.

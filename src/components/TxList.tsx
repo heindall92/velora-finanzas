@@ -8,26 +8,27 @@ import { useDayLabel } from './useDayLabel';
 
 
 export function TxRow({ tx }: { tx: Transaction }) {
-  const { data, currency } = useApp();
+  const { data, currency, money, t } = useApp();
   const { openEdit } = useEntry();
   const lang = data.profile.language;
+  const accName = (id?: string) => data.accounts.find((a) => a.id === id)?.name;
   const label = categoryLabel(tx.category, lang);
-  const title = tx.note || label;
+  const transfer = tx.type === 'transfer';
+  const route = transfer ? `${accName(tx.accountId) ?? '?'} → ${accName(tx.toAccountId) ?? '?'}` : '';
+  const title = transfer ? tx.note || t('transfer') : tx.note || label;
+  // Second line: category (when the note is the title) and the bank, so "which card?" is answered in the list.
+  const sub = transfer ? route : [tx.note ? label : '', accName(tx.accountId) ?? ''].filter(Boolean).join(' · ');
   const income = tx.type === 'income';
   return (
     <li>
-      <button
-        type="button"
-        onClick={() => openEdit(tx)}
-        className="press hover-soft flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left"
-      >
+      <button type="button" onClick={() => openEdit(tx)} className="press hover-soft flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left">
         <CategoryBadge id={tx.category} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[0.9375rem] font-medium text-ink">{title}</span>
-          {tx.note && <span className="block truncate text-[0.8125rem] text-muted">{label}</span>}
+          {sub && <span className="block truncate text-[0.8125rem] text-muted">{sub}</span>}
         </span>
-        <span className={`num shrink-0 text-[0.9375rem] font-semibold ${income ? 'text-money' : 'text-ink'}`}>
-          {formatSigned(tx.amount, currency, income ? '+' : '-')}
+        <span className={`num shrink-0 text-[0.9375rem] font-semibold ${income ? 'text-money' : transfer ? 'text-ink-2' : 'text-ink'}`}>
+          {transfer ? money(tx.amount) : formatSigned(tx.amount, currency, income ? '+' : '-')}
         </span>
       </button>
     </li>
@@ -47,7 +48,7 @@ export default function TxList({ txs, showDayTotals = true }: { txs: Transaction
   return (
     <div className="space-y-4">
       {groups.map((g) => {
-        const net = sumMoney(g.items.map((x) => (x.type === 'income' ? x.amount : -x.amount)));
+        const net = sumMoney(g.items.map((x) => (x.type === 'income' ? x.amount : x.type === 'expense' ? -x.amount : 0)));
         return (
           <section key={g.day} aria-label={dayLabel(g.day)}>
             <div className="flex items-center justify-between px-2 pb-1">

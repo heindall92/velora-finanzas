@@ -1,6 +1,6 @@
 import { addDays, addMonths, daysInMonth, diffDays, fromDayKey, startOfMonth, startOfWeek, toDayKey } from './dates';
 import { roundCents, sumMoney } from './money';
-import type { Goal, Transaction, TxType } from './types';
+import type { Account, FlowType, Goal, Transaction } from './types';
 
 export type PeriodKind = 'week' | 'month' | 'year';
 
@@ -21,11 +21,67 @@ export interface Bucket extends Range {
 
 const inRange = (day: string, r: Range) => day >= r.start && day <= r.end;
 
+/** Net of income minus expenses. Transfers move money between your own accounts: net zero. */
 export function balance(txs: readonly Transaction[]): number {
-  return sumMoney(txs.map((t) => (t.type === 'income' ? t.amount : -t.amount)));
+  return sumMoney(txs.map((t) => (t.type === 'income' ? t.amount : t.type === 'expense' ? -t.amount : 0)));
 }
 
-export function totalOf(txs: readonly Transaction[], type: TxType, r: Range): number {
+/** Everything you have: every account's opening balance plus every income and expense. */
+export function totalBalance(accounts: readonly Account[], txs: readonly Transaction[]): number {
+  return sumMoney([...accounts.map((a) => a.opening), balance(txs)]);
+}
+
+/** Current balance per account id. Key '' collects movements recorded without an account. */
+export function accountBalances(accounts: readonly Account[], txs: readonly Transaction[]): Map<string, number> {
+  const cents = new Map<string, number>(accounts.map((a) => [a.id, Math.round(a.opening * 100)]));
+  const add = (id: string | undefined, v: number) => {
+    const k = id && cents.has(id) ? id : '';
+    cents.set(k, (cents.get(k) ?? 0) + Math.round(v * 100));
+  };
+  for (const t of txs) {
+    if (t.type === 'income') add(t.accountId, t.amount);
+    else if (t.type === 'expense') add(t.accountId, -t.amount);
+    else {
+      add(t.accountId, -t.amount);
+      add(t.toAccountId, t.amount);
+    }
+  }
+  const out = new Map<string, number>();
+  for (const [k, v] of cents) out.set(k, v / 100);
+  if (out.get('') === 0) out.delete('');
+  return out;
+}
+
+export interface NetWorth {
+  assets: number;
+  liabilities: number; // positive number: what you owe
+  net: number;
+}
+
+/** Patrimônio: positive balances are assets, negative ones (credit card bills, overdraft) liabilities. */
+export function netWorth(balances: Map<string, number>): NetWorth {
+  let a = 0;
+  let l = 0;
+  for (const v of balances.values()) {
+    if (v >= 0) a += Math.round(v * 100);
+    else l += Math.round(-v * 100);
+  }
+  return { assets: a / 100, liabilities: l / 100, net: (a - l) / 100 };
+}
+
+/** Spending (or income) per account in a range. Key '' = without account. */
+export function byAccount(txs: readonly Transaction[], type: FlowType, r: Range): { id: string; total: number; share: number }[] {
+  const map = new Map<string, number>();
+  for (const t of txs) {
+    if (t.type !== type || !inRange(t.date, r)) continue;
+    const k = t.accountId ?? '';
+    map.set(k, (map.get(k) ?? 0) + Math.round(t.amount * 100));
+  }
+  const all = [...map.values()].reduce((s, v) => s + v, 0);
+  return [...map.entries()].map(([id, c]) => ({ id, total: c / 100, share: all ? c / all : 0 })).sort((a, b) => b.total - a.total);
+}
+
+export function totalOf(txs: readonly Transaction[], type: FlowType, r: Range): number {
   return sumMoney(txs.filter((t) => t.type === type && inRange(t.date, r)).map((t) => t.amount));
 }
 
@@ -90,7 +146,7 @@ export interface CategoryTotal {
   count: number;
 }
 
-export function byCategory(txs: readonly Transaction[], type: TxType, r: Range): CategoryTotal[] {
+export function byCategory(txs: readonly Transaction[], type: FlowType, r: Range): CategoryTotal[] {
   const map = new Map<string, { cents: number; count: number }>();
   for (const t of txs) {
     if (t.type !== type || !inRange(t.date, r)) continue;
@@ -106,7 +162,7 @@ export function byCategory(txs: readonly Transaction[], type: TxType, r: Range):
 }
 
 /** Spending series: one bar per day (week, month) or per month (year). */
-export function spendingSeries(txs: readonly Transaction[], kind: PeriodKind, anchor: Date, today: Date, type: TxType = 'expense'): Bucket[] {
+export function spendingSeries(txs: readonly Transaction[], kind: PeriodKind, anchor: Date, today: Date, type: FlowType = 'expense'): Bucket[] {
   const r = periodRange(kind, anchor);
   const todayKey = toDayKey(today);
   const buckets: Bucket[] = [];

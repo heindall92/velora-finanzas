@@ -6,6 +6,7 @@ import Shell from './components/Shell';
 import Toaster from './components/Toaster';
 import { localeOf } from './lib/i18n';
 import { requestPersistence } from './lib/platform';
+import Accounts from './pages/Accounts';
 import Activity from './pages/Activity';
 import Goals from './pages/Goals';
 import Home from './pages/Home';
@@ -95,6 +96,7 @@ function Routed() {
           <Route index element={<Home />} />
           <Route path="activity" element={<Activity />} />
           <Route path="insights" element={<Insights />} />
+          <Route path="accounts" element={<Accounts />} />
           <Route path="goals" element={<Goals />} />
           <Route path="settings" element={<Settings />} />
           {/* v1 routes: old bookmarks and home-screen shortcuts still land somewhere sensible. */}

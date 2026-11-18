@@ -1,7 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 import { useMemo } from 'react';
 import { CARD_STYLES } from '../lib/cardColors';
-import { periodRange, balance, totalOf } from '../lib/stats';
+import { periodRange, totalBalance, totalOf } from '../lib/stats';
 import { useApp } from '../state/AppState';
 import { Masked } from './ui';
 
@@ -12,11 +12,11 @@ export default function BalanceCard() {
   const month = periodRange('month', today);
   const { bal, inc, out } = useMemo(
     () => ({
-      bal: balance(data.transactions),
+      bal: totalBalance(data.accounts, data.transactions),
       inc: totalOf(data.transactions, 'income', month),
       out: totalOf(data.transactions, 'expense', month),
     }),
-    [data.transactions, month.start, month.end], // eslint-disable-line react-hooks/exhaustive-deps
+    [data.accounts, data.transactions, month.start, month.end], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   return (

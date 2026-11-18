@@ -16,7 +16,8 @@ Interfaz en **portugués de Brasil** (por defecto) y español. Monedas: BRL, USD
 </table>
 
 <img src="docs/screenshots/desktop-home.png" alt="Inicio en escritorio" />
-<img src="docs/screenshots/desktop-insights.png" alt="Análisis en escritorio" />
+<img src="docs/screenshots/desktop-spending.png" alt="Gastos en escritorio" />
+<img src="docs/screenshots/desktop-accounts.png" alt="Contas y patrimonio en escritorio" />
 
 ## Qué hace
 
@@ -24,8 +25,12 @@ Interfaz en **portugués de Brasil** (por defecto) y español. Monedas: BRL, USD
   con **ritmo** (¿gastas más rápido de lo que pasa el mes?) y cuánto puedes gastar por día.
 - **Extrato**: todos los movimientos por día, búsqueda sin acentos ("cafe" encuentra "Café"),
   filtro gasto/entrada, navegación por meses. Tocar un movimiento lo edita; borrar se puede deshacer.
-- **Análisis**: semana / mes / año, gráfico de gasto diario o mensual, comparación con el periodo
-  anterior **en el mismo punto** (18 nov vs 18 oct, no vs octubre entero), categorías ordenadas.
+- **Gastos**: selector de meses ("Set Out **Nov** Dez Jan"), donut de gastos o entradas **por
+  categoría o por banco**, comparación con el mes anterior **en el mismo punto** (18 nov vs 18 oct),
+  límite mensual por categoría con barra y aviso, y gasto diario.
+- **Contas / Patrimônio**: cada banco, tarjeta, ahorro o efectivo con su saldo y lo gastado en el
+  mes; activos, pasivos (factura de la tarjeta) y patrimonio neto con donut. Tocar un banco abre
+  su extracto. Las **transferencias** (pagar la factura, guardar en el ahorro) no cuentan como gasto.
 - **Metas**: objetivo, ahorrado, plazo → "R$ 812,50/mês até jun. de 2027". Aportar y retirar.
 - **Ajustes**: perfil y presupuesto, idioma, tema (sistema / claro / oscuro), moneda, color de la
   tarjeta, **bloqueo con PIN (cifrado)**, instalar la app, exportar / importar / borrar.
@@ -70,7 +75,7 @@ npm run dev
 | Script | Qué hace |
 | --- | --- |
 | `npm run check` | lint + tipos + tests unitarios + build (lo mismo que CI) |
-| `npm test` | 64 tests: dinero, fechas, estadísticas, migración, importación hostil, cifrado, detección de navegador |
+| `npm test` | 71 tests: dinero, fechas, estadísticas, cuentas y transferencias, patrimonio, migración, importación hostil, cifrado, detección de navegador |
 | `npm run e2e` | Flujo completo en iPhone (UA de Safari y de Chrome) y escritorio, claro y oscuro; genera `docs/screenshots/` |
 | `npm run icons` | Regenera los PNG de la app desde `public/icon.svg` |
 
@@ -84,7 +89,7 @@ src/
   lib/          lógica pura y testeada: money, dates, stats, schema (migración/validación), vault (cifrado), i18n, platform
   state/        AppState (estado + persistencia serializada), storage (IndexedDB), install (beforeinstallprompt)
   components/   Shell (sidebar / tab bar), Sheet (<dialog> nativo), EntrySheet, gráfico y listas
-  pages/        Home, Activity, Insights, Goals, Settings, Onboarding, LockScreen
+  pages/        Home, Activity (Extrato), Insights (Gastos), Accounts (Contas), Goals, Settings, Onboarding, LockScreen
   test/         vitest
 scripts/        e2e.cjs, gen-icons.cjs
 ```

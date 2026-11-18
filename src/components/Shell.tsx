@@ -1,4 +1,4 @@
-import { BarChart3, Home, ListOrdered, Lock, Plus, Settings, Target, Wallet } from 'lucide-react';
+import { Home, Landmark, ListOrdered, Lock, PieChart, Plus, Settings, Target, Wallet } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useApp } from '../state/AppState';
@@ -33,7 +33,8 @@ export default function Shell() {
   const nav = [
     { to: '/', label: t('navHome'), icon: Home, end: true },
     { to: '/activity', label: t('navActivity'), icon: ListOrdered },
-    { to: '/insights', label: t('navInsights'), icon: BarChart3 },
+    { to: '/insights', label: t('navSpending'), icon: PieChart },
+    { to: '/accounts', label: t('navAccounts'), icon: Landmark },
     { to: '/goals', label: t('navGoals'), icon: Target },
     { to: '/settings', label: t('navSettings'), icon: Settings },
   ];

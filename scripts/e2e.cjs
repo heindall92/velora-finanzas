@@ -41,9 +41,18 @@ async function newPage(browser, profile, { dark = false } = {}) {
   return { ctx, page };
 }
 
+/**
+ * Mobile browsers WIDEN the layout viewport when content overflows, so scrollWidth vs innerWidth
+ * can both read 525 on a 393px phone and look fine. Compare against the device width instead.
+ */
 async function noOverflow(page, label) {
-  const { sw, iw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
-  if (sw > iw) problems.push(`${label}: horizontal overflow ${sw} > ${iw}`);
+  const { sw, iw, dw } = await page.evaluate(() => ({
+    sw: document.documentElement.scrollWidth,
+    iw: window.innerWidth,
+    dw: window.screen.width,
+  }));
+  const limit = Math.min(iw, dw);
+  if (sw > limit + 1 || iw > dw + 1) problems.push(`${label}: horizontal overflow (scroll ${sw}, viewport ${iw}, device ${dw})`);
 }
 
 /** The currency symbol must never overlap the digits (the v1 bug), in any currency. */
@@ -66,23 +75,29 @@ async function shot(page, name, full = true) {
   await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: full });
 }
 
-async function onboard(page, { budget = '3.000', start = '4.250,90' } = {}) {
+async function onboard(page, { budget = '3.000', bank = 'Nubank', start = '4.250,90' } = {}) {
   await page.goto(BASE);
   await page.getByRole('heading', { name: /Vamos organizar/ }).first().waitFor();
   await page.getByLabel('Nome', { exact: true }).fill('Ana');
   await page.getByLabel('Sobrenome').fill('Souza');
   await page.getByLabel(/Orçamento mensal/).fill(budget);
-  await page.getByLabel(/Saldo atual/).fill(start);
+  if (bank) {
+    await page.getByRole('radio', { name: bank, exact: true }).click();
+    await page.getByLabel('Saldo atual nesse banco').fill(start);
+  }
   await page.getByRole('button', { name: 'Começar' }).click();
   await page.getByRole('heading', { name: 'Olá, Ana' }).waitFor();
 }
 
-async function addEntry(page, { type = 'Gasto', amount, category, note, date }) {
+async function addEntry(page, { type = 'Gasto', amount, category, note, date, account, from, to }) {
   await page.getByRole('button', { name: 'Novo lançamento' }).first().click();
   const dlg = page.locator('dialog[open]');
   await dlg.waitFor();
   if (type !== 'Gasto') await dlg.getByRole('button', { name: type, exact: true }).click();
   await dlg.getByLabel('Valor').fill(amount);
+  if (account) await dlg.getByRole('radiogroup', { name: 'Conta' }).getByRole('radio', { name: account, exact: true }).click();
+  if (from) await dlg.getByRole('radiogroup', { name: 'De' }).getByRole('radio', { name: from, exact: true }).click();
+  if (to) await dlg.getByRole('radiogroup', { name: 'Para' }).getByRole('radio', { name: to, exact: true }).click();
   if (category) await dlg.getByRole('radio', { name: category }).click();
   if (note) await dlg.getByLabel('Nota').fill(note);
   if (date) await dlg.getByLabel('Data').fill(date);
@@ -96,16 +111,37 @@ function dayKey(offset) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+async function addAccount(page, { bank, kind, opening }) {
+  await page.getByRole('button', { name: 'Adicionar conta' }).first().click();
+  const dlg = page.locator('dialog[open]');
+  await dlg.waitFor();
+  await dlg.getByRole('radio', { name: bank, exact: true }).click();
+  if (kind) await dlg.getByRole('radio', { name: kind, exact: true }).click();
+  await dlg.getByLabel(/Saldo atual|Fatura atual/).fill(opening);
+  await dlg.getByRole('button', { name: 'Salvar' }).click();
+  await dlg.waitFor({ state: 'hidden' });
+}
+
+/*
+ * Fixture with answers computed by hand BEFORE looking at the UI (dashboard-design: known totals).
+ * Openings: Nubank 4.250,90 · Cartão Nubank −850 (bill) · Inter 1.000 · Carteira 120
+ * After the entries below and paying the 850 bill from Nubank:
+ *   Nubank 1.550,90 · Cartão Nubank −495,77 · Inter 1.964,10 · Carteira 81,10
+ *   Total 3.100,33 = assets 3.596,10 − liabilities 495,77
+ * Spending by bank this month: Nubank 1.850 · Cartão 495,77 · Inter 235,90 · Carteira 38,90
+ * (the flow then edits Padaria 38,90 → 40,00: Carteira 80,00 / spent 40,00, total 3.099,23, assets 3.595,00)
+ */
 async function seed(page) {
   const entries = [
-    { amount: '412,37', category: 'Mercado', note: 'Pão de Açúcar', date: dayKey(0) },
-    { amount: '38,90', category: 'Café e lanches', note: 'Padaria', date: dayKey(0) },
-    { amount: '27,50', category: 'Uber / 99', date: dayKey(-1) },
-    { amount: '1.850', category: 'Moradia', note: 'Aluguel', date: dayKey(-3) },
-    { amount: '89,90', category: 'Celular e internet', note: 'Vivo Fibra', date: dayKey(-4) },
-    { amount: '55,90', category: 'Assinaturas', note: 'Netflix + Spotify', date: dayKey(-6) },
-    { amount: '146', category: 'Restaurantes', note: 'Jantar', date: dayKey(-8) },
-    { type: 'Entrada', amount: '1.200', category: 'Freela', note: 'Site cliente', date: dayKey(-2) },
+    { amount: '412,37', category: 'Mercado', note: 'Pão de Açúcar', date: dayKey(0), account: 'Cartão Nubank' },
+    { amount: '38,90', category: 'Café e lanches', note: 'Padaria', date: dayKey(0), account: 'Carteira' },
+    { amount: '27,50', category: 'Uber / 99', date: dayKey(-1), account: 'Cartão Nubank' },
+    { amount: '1.850', category: 'Moradia', note: 'Aluguel', date: dayKey(-3), account: 'Nubank' },
+    { amount: '89,90', category: 'Celular e internet', note: 'Vivo Fibra', date: dayKey(-4), account: 'Inter' },
+    { amount: '55,90', category: 'Assinaturas', note: 'Netflix + Spotify', date: dayKey(-6), account: 'Cartão Nubank' },
+    { amount: '146', category: 'Restaurantes', note: 'Jantar', date: dayKey(-8), account: 'Inter' },
+    { type: 'Entrada', amount: '1.200', category: 'Freela', note: 'Site cliente', date: dayKey(-2), account: 'Inter' },
+    { type: 'Transferência', amount: '850', note: 'Fatura', date: dayKey(0), from: 'Nubank', to: 'Cartão Nubank' },
   ];
   for (const e of entries) await addEntry(page, e);
 }
@@ -120,8 +156,9 @@ async function seed(page) {
     await shot(page, 'iphone-onboarding', false);
     await onboard(page);
 
-    // Starting balance became the first income; R$ formatted the Brazilian way.
+    // The bank picked at onboarding is the first account; R$ formatted the Brazilian way.
     assert.ok(await page.getByText('R$ 4.250,90').first().isVisible(), 'starting balance shown as R$ 4.250,90');
+    assert.equal(await page.getByText('Pão de Açúcar').count(), 0, 'no demo data');
     await page.getByText('Instale o app').first().waitFor(); // iOS install banner
     await shot(page, 'iphone-home-empty');
 
@@ -130,9 +167,12 @@ async function seed(page) {
     await shot(page, 'iphone-install-safari', false);
     await page.getByRole('button', { name: 'Fechar' }).click();
 
+    // Accounts: a credit card with an open bill, another bank, cash.
+    await addAccount(page, { bank: 'Nubank', kind: 'Cartão de crédito', opening: '850' });
+    await addAccount(page, { bank: 'Inter', opening: '1.000' });
+    await addAccount(page, { bank: 'Carteira', opening: '120' });
     await seed(page);
-    // Balance = 4250.90 + 1200 − (412.37+38.90+27.50+1850+89.90+55.90+146) = 2830.33
-    await page.getByText('R$ 2.830,33').first().waitFor();
+    await page.getByText('R$ 3.100,33').first().waitFor();
     await noOverflow(page, 'iphone home');
     await page.getByRole('button', { name: 'Agora não' }).click();
     await shot(page, 'iphone-home');
@@ -161,12 +201,42 @@ async function seed(page) {
     await noOverflow(page, 'iphone activity');
     await shot(page, 'iphone-activity');
 
-    await page.getByRole('navigation').getByRole('link', { name: 'Análise' }).first().click();
-    await page.getByText('Por categoria').first().waitFor();
-    await noOverflow(page, 'iphone insights');
-    await shot(page, 'iphone-insights');
+    // Statement filtered by bank (native select).
+    await page.locator('select').selectOption({ label: 'Cartão Nubank' });
+    await page.getByRole('button', { name: /Pão de Açúcar/ }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /Aluguel/ }).count(), 0, 'filter hides other banks');
+    await page.locator('select').selectOption({ label: 'Todas as contas' });
 
-    await page.getByRole('navigation').getByRole('link', { name: 'Metas' }).first().click();
+    // Gastos: donut by category, by bank, limits.
+    await page.getByRole('navigation').getByRole('link', { name: 'Gastos' }).first().click();
+    await page.getByText('Total de gastos').waitFor();
+    await page.getByText('R$ 2.621,67').first().waitFor(); // Padaria was edited to 40,00 above
+    await noOverflow(page, 'iphone spending');
+    await shot(page, 'iphone-spending');
+    await page.getByRole('button', { name: 'Banco', exact: true }).click();
+    await page.getByText('Gastos por banco').waitFor();
+    for (const v of ['R$ 1.850,00', 'R$ 495,77', 'R$ 235,90', 'R$ 40,00']) await page.getByText(v).first().waitFor();
+    await shot(page, 'iphone-spending-bank', false);
+    await page.getByRole('button', { name: /^Mercado/ }).click();
+    await page.locator('dialog[open]').getByLabel('Definir limite').fill('500');
+    await page.locator('dialog[open]').getByRole('button', { name: 'Salvar' }).click();
+    await page.getByText('restam R$ 87,63').waitFor();
+    await page.getByRole('button', { name: 'Ver entradas' }).click();
+    await page.getByText('Total de entradas').waitFor();
+    await page.getByRole('button', { name: 'Ver gastos' }).click();
+
+    // Contas / Patrimônio.
+    await page.getByRole('navigation').getByRole('link', { name: 'Contas' }).first().click();
+    await page.getByRole('heading', { name: /Patrimônio/ }).waitFor();
+    for (const v of ['R$ 3.099,23', 'R$ 3.595,00', 'R$ 495,77', 'R$ 1.550,90', 'R$ 1.964,10', 'R$ 80,00']) await page.getByText(v).first().waitFor();
+    await noOverflow(page, 'iphone accounts');
+    await shot(page, 'iphone-accounts');
+    await page.getByRole('button', { name: 'Passivos' }).click();
+    await page.getByText('Minhas dívidas').waitFor();
+    await shot(page, 'iphone-accounts-liabilities', false);
+    await page.getByRole('button', { name: 'Ativos' }).click();
+
+    await page.getByRole('link', { name: /^Metas/ }).click();
     await page.getByRole('button', { name: 'Criar meta' }).click();
     let g = page.locator('dialog[open]');
     await g.getByLabel('Nome', { exact: true }).fill('Reserva de emergência');
@@ -234,15 +304,15 @@ async function seed(page) {
     await page.keyboard.press('Enter');
     await page.getByRole('heading', { name: 'Ajustes' }).waitFor({ timeout: 15000 });
     await page.getByRole('navigation').getByRole('link', { name: 'Início' }).first().click();
-    await page.getByText('R$ 2.829,23').first().waitFor(); // 38,90 → 40,00
+    await page.getByText('R$ 3.099,23').first().waitFor(); // Padaria 38,90 → 40,00
 
     // Dark mode.
     await page.getByRole('button', { name: 'Ajustes' }).click();
     await page.getByRole('button', { name: 'Escuro' }).click();
     await page.getByRole('navigation').getByRole('link', { name: 'Início' }).first().click();
     await shot(page, 'iphone-home-dark');
-    await page.getByRole('navigation').getByRole('link', { name: 'Análise' }).first().click();
-    await shot(page, 'iphone-insights-dark');
+    await page.getByRole('navigation').getByRole('link', { name: 'Gastos' }).first().click();
+    await shot(page, 'iphone-spending-dark');
 
     // Export a backup for the import test below.
     await page.getByRole('navigation').getByRole('link', { name: 'Início' }).first().click();
@@ -261,10 +331,10 @@ async function seed(page) {
     await d.page.getByRole('navigation').getByRole('link', { name: 'Ajustes' }).first().click();
     await d.page.getByRole('button', { name: 'Claro' }).click();
     await d.page.getByRole('navigation').getByRole('link', { name: 'Início' }).first().click();
-    await d.page.getByText('R$ 2.829,23').first().waitFor();
+    await d.page.getByText('R$ 3.099,23').first().waitFor();
     await noOverflow(d.page, 'desktop home');
     await shot(d.page, 'desktop-home', false);
-    for (const [link, name] of [['Extrato', 'desktop-activity'], ['Análise', 'desktop-insights'], ['Metas', 'desktop-goals'], ['Ajustes', 'desktop-settings']]) {
+    for (const [link, name] of [['Extrato', 'desktop-activity'], ['Gastos', 'desktop-spending'], ['Contas', 'desktop-accounts'], ['Metas', 'desktop-goals'], ['Ajustes', 'desktop-settings']]) {
       await d.page.getByRole('navigation').getByRole('link', { name: link }).first().click();
       await noOverflow(d.page, name);
       await shot(d.page, name, false);
@@ -293,7 +363,7 @@ async function seed(page) {
       await moneyFieldsClear(page, `onboarding ${cur}`);
     }
     await shot(page, 'iphone-onboarding-filled', false);
-    await onboard(page, { budget: '', start: '' });
+    await onboard(page, { budget: '', bank: null });
     await page.getByRole('button', { name: 'Como instalar' }).click();
     await page.getByText('Toque em Compartilhar no canto superior direito, ao lado do endereço').waitFor();
     await shot(page, 'iphone-chrome-install', false);

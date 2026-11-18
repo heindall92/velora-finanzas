@@ -1,7 +1,8 @@
 import { normalizeCategory } from './categories';
 import { isDayKey, toDayKey } from './dates';
 import { isCurrency, roundCents } from './money';
-import type { AppData, CardColor, Goal, GoalIcon, Lang, Profile, ThemePref, Transaction, TxType } from './types';
+import { BANKS } from './banks';
+import type { Account, AccountKind, AppData, CardColor, Goal, GoalIcon, Lang, Profile, ThemePref, Transaction, TxType } from './types';
 
 export const CARD_COLORS: readonly CardColor[] = ['blue', 'black', 'red', 'green', 'orange', 'mauve'];
 export const GOAL_ICONS: readonly GoalIcon[] = ['target', 'plane', 'shield', 'laptop', 'home', 'car', 'gift', 'piggy'];
@@ -31,12 +32,13 @@ export function defaultProfile(lang: Lang = detectLang()): Profile {
     budget: 0,
     cardColor: 'blue',
     hideBalance: false,
+    categoryLimits: {},
     onboardingComplete: false,
   };
 }
 
 export function emptyData(lang?: Lang): AppData {
-  return { version: 2, profile: defaultProfile(lang), transactions: [], goals: [] };
+  return { version: 3, profile: defaultProfile(lang), accounts: [], transactions: [], goals: [] };
 }
 
 // ── Narrow untrusted values ────────────────────────────────────────────────
@@ -77,13 +79,51 @@ function pick<T extends string>(v: unknown, allowed: readonly T[], fallback: T):
   return typeof v === 'string' && (allowed as readonly string[]).includes(v) ? (v as T) : fallback;
 }
 
-/** Accepts v2 transactions and v1 ones ({description, recipientName, date: ISO, type: 'transfer'}). */
-function migrateTransaction(raw: unknown): Transaction | null {
+const ACCOUNT_KINDS: readonly AccountKind[] = ['checking', 'credit', 'savings', 'cash'];
+const BANK_IDS = BANKS.map((b) => b.id);
+
+function migrateAccount(raw: unknown): Account | null {
+  // v1 shipped a fake default account ({type:'card', lastFour:'3827'}): only v3 accounts have `kind`.
+  if (!isObj(raw) || !('kind' in raw)) return null;
+  const name = text(raw.name, 40);
+  const id = text(raw.id, 64);
+  if (!name || !id) return null;
+  const opening = typeof raw.opening === 'number' && Number.isFinite(raw.opening) && Math.abs(raw.opening) <= MAX_AMOUNT ? roundCents(raw.opening) : 0;
+  return {
+    id,
+    name,
+    kind: pick(raw.kind, ACCOUNT_KINDS, 'checking'),
+    bank: pick(raw.bank, BANK_IDS, 'other'),
+    opening,
+    createdAt: instantFrom(raw.createdAt, new Date().toISOString()),
+  };
+}
+
+function migrateLimits(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = Object.create(null);
+  if (!isObj(raw)) return {};
+  for (const [k, v] of Object.entries(raw)) {
+    const id = normalizeCategory(k, 'expense');
+    const m = money(v);
+    if (id === k && m) out[id] = m;
+  }
+  return { ...out };
+}
+
+/**
+ * Accepts v3/v2 transactions and v1 ones ({description, recipientName, date: ISO, type: 'transfer'}).
+ * Account references must point to an existing account; a transfer needs two different ones,
+ * otherwise it is not a transfer (v1 "transfer" meant money leaving, i.e. an expense).
+ */
+function migrateTransaction(raw: unknown, accountIds: Set<string>): Transaction | null {
   if (!isObj(raw)) return null;
   const amount = money(raw.amount);
   const date = dayFrom(raw.date);
   if (amount === null || amount === 0 || !date) return null;
-  const type: TxType = raw.type === 'income' ? 'income' : 'expense'; // v1 'transfer' was money leaving
+  const accountId = typeof raw.accountId === 'string' && accountIds.has(raw.accountId) ? raw.accountId : undefined;
+  const toAccountId = typeof raw.toAccountId === 'string' && accountIds.has(raw.toAccountId) ? raw.toAccountId : undefined;
+  const isTransfer = raw.type === 'transfer' && accountId && toAccountId && accountId !== toAccountId;
+  const type: TxType = isTransfer ? 'transfer' : raw.type === 'income' ? 'income' : 'expense';
   let note = text(raw.note);
   if (!note) {
     const desc = text(raw.description);
@@ -97,6 +137,8 @@ function migrateTransaction(raw: unknown): Transaction | null {
     type,
     amount,
     category: normalizeCategory(raw.category, type),
+    ...(accountId ? { accountId } : {}),
+    ...(isTransfer ? { toAccountId } : {}),
     note,
     date,
     createdAt,
@@ -141,6 +183,7 @@ function migrateProfile(raw: unknown, legacyCardColor: unknown): Profile {
     budget: money(raw.budget) ?? 0,
     cardColor: pick(raw.cardColor ?? legacyCardColor, CARD_COLORS, 'blue'),
     hideBalance: raw.hideBalance === true,
+    categoryLimits: migrateLimits(raw.categoryLimits),
     onboardingComplete: raw.onboardingComplete === true,
   };
 }
@@ -169,10 +212,17 @@ export function migrate(raw: unknown): AppData {
     .map(migrateGoal)
     .filter(dedupe);
 
+  const accSeen = new Set<string>();
+  const accounts = (Array.isArray(raw.accounts) ? raw.accounts.slice(0, 200) : [])
+    .map(migrateAccount)
+    .filter((a): a is Account => !!a && !accSeen.has(a.id) && !!accSeen.add(a.id));
+  const accountIds = new Set(accounts.map((a) => a.id));
+
   return {
-    version: 2,
+    version: 3,
     profile: migrateProfile(raw.profile, legacyColor),
-    transactions: txIn.map(migrateTransaction).filter(dedupe),
+    accounts,
+    transactions: txIn.map((x) => migrateTransaction(x, accountIds)).filter(dedupe),
     goals,
   };
 }

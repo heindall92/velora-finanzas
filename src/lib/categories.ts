@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+  ArrowLeftRight,
   Banknote,
   Bus,
   Car,
@@ -26,7 +27,7 @@ import {
   UtensilsCrossed,
   Wallet,
 } from 'lucide-react';
-import type { Lang, TxType } from './types';
+import type { FlowType, Lang, TxType } from './types';
 
 export interface CategoryDef {
   id: string;
@@ -69,6 +70,8 @@ export const CATEGORIES: CategoryDef[] = [
   { id: 'investment', type: 'income', icon: TrendingUp, hue: 170, label: { pt: 'Rendimentos', es: 'Inversiones' } },
   { id: 'gift_in', type: 'income', icon: Gift, hue: 345, label: { pt: 'Presente / Pix recebido', es: 'Regalo recibido' } },
   { id: 'other_in', type: 'income', icon: Wallet, hue: 220, label: { pt: 'Outras entradas', es: 'Otros ingresos' } },
+
+  { id: 'transfer', type: 'transfer', icon: ArrowLeftRight, hue: 220, label: { pt: 'Transferência', es: 'Transferencia' } },
 ];
 
 const BY_ID = new Map(CATEGORIES.map((c) => [c.id, c]));
@@ -108,6 +111,7 @@ const LEGACY: Record<string, string> = {
 };
 
 export function normalizeCategory(raw: unknown, type: TxType): string {
+  if (type === 'transfer') return 'transfer';
   const id = typeof raw === 'string' ? (LEGACY[raw] ?? raw) : '';
   const def = BY_ID.get(id);
   if (def && def.type === type) return def.id;
@@ -120,7 +124,7 @@ export function getCategory(id: string): CategoryDef {
   return BY_ID.get(id) ?? BY_ID.get('other')!;
 }
 
-export function categoriesFor(type: TxType): CategoryDef[] {
+export function categoriesFor(type: FlowType): CategoryDef[] {
   return CATEGORIES.filter((c) => c.type === type);
 }
 

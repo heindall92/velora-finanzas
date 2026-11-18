@@ -214,7 +214,7 @@ describe('migration from v1 and untrusted imports', () => {
 
   it('migrates profile, card color, categories and drops invalid rows', () => {
     const d = migrate(v1);
-    expect(d.version).toBe(2);
+    expect(d.version).toBe(3);
     expect(d.profile).toMatchObject({ firstName: 'Ana', lastName: 'Souza', theme: 'dark', budget: 3000, cardColor: 'blue' });
     expect(d.transactions.map((t) => t.id)).toEqual(['1', '2', '3']);
     expect(d.transactions[0]).toMatchObject({ category: 'food', note: 'Ana', type: 'expense' });

@@ -1,6 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, Lock, ReceiptText } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import AccountsPreview from '../components/AccountsPreview';
 import BalanceCard from '../components/BalanceCard';
 import BudgetTile from '../components/BudgetTile';
 import { CategoryBreakdown } from '../components/CategoryBreakdown';
@@ -55,7 +56,7 @@ export default function Home() {
 
       <InstallBanner />
 
-      <div className="grid gap-4 lg:grid-cols-12 lg:gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
         <div className="lg:col-span-7">
           <BalanceCard />
         </div>
@@ -109,6 +110,7 @@ export default function Home() {
         </section>
 
         <div className="flex flex-col gap-4 lg:col-span-5 lg:gap-6">
+          <AccountsPreview />
           {cats.length > 0 && (
             <section className="card p-3 sm:p-4">
               <div className="px-2 pt-1">

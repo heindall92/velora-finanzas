@@ -1,6 +1,8 @@
 import { ArrowRight, Gauge, ReceiptText, Target, Upload, Wallet } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { Segmented } from '../components/ui';
+import BankBadge from '../components/BankBadge';
+import { BANKS, getBank } from '../lib/banks';
 import MoneyInput from '../components/MoneyInput';
 import { hasKey, makeT } from '../lib/i18n';
 import { CURRENCIES, currencySymbol, parseAmount, type CurrencyCode } from '../lib/money';
@@ -17,6 +19,7 @@ export default function Onboarding() {
   const [currency, setCurrency] = useState<CurrencyCode>(data.profile.currency);
   const [budget, setBudget] = useState('');
   const [start, setStart] = useState('');
+  const [bank, setBank] = useState<string | null>(null);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const firstRef = useRef<HTMLInputElement>(null);
@@ -31,7 +34,7 @@ export default function Onboarding() {
     }
     completeOnboarding(
       { firstName: first.trim().slice(0, 60), lastName: last.trim().slice(0, 60), currency, language: lang, budget: parseAmount(budget) ?? 0 },
-      parseAmount(start) ?? 0,
+      bank ? { bank, name: getBank(bank).name || t('openingBalance'), opening: parseAmount(start) ?? 0 } : null,
     );
   };
 
@@ -139,10 +142,36 @@ export default function Onboarding() {
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <MoneyField id={ids.budget} hintId={ids.budgetHint} label={t('obBudgetLabel')} hint={t('obBudgetHint')} value={budget} onChange={setBudget} currency={currency} />
-              <MoneyField id={ids.start} hintId={ids.startHint} label={t('obStartBalance')} hint={t('obStartBalanceHint')} value={start} onChange={setStart} currency={currency} />
-            </div>
+            <MoneyField id={ids.budget} hintId={ids.budgetHint} label={t('obBudgetLabel')} hint={t('obBudgetHint')} value={budget} onChange={setBudget} currency={currency} />
+
+            <fieldset>
+              <legend className="label">{t('obBank')}</legend>
+              <div className="grid grid-cols-5 gap-1.5" role="radiogroup">
+                {BANKS.filter((b) => b.name && b.id !== 'wallet').slice(0, 10).map((b) => {
+                  const sel = bank === b.id;
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={sel}
+                      aria-label={b.name}
+                      title={b.name}
+                      onClick={() => setBank(sel ? null : b.id)}
+                      className={`press flex flex-col items-center gap-1 rounded-xl py-1.5 ${sel ? 'bg-accent/[.08] ring-1 ring-inset ring-accent/40' : 'hover-soft'}`}
+                    >
+                      <BankBadge bank={b.id} account={{ bank: b.id, kind: 'checking', name: b.name }} size={36} />
+                      <span className={`w-full truncate px-0.5 text-center text-[10.5px] ${sel ? 'font-semibold text-ink' : 'text-ink-2'}`}>{b.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-1.5 text-[0.8125rem] text-muted">{t('obBankHint')}</p>
+            </fieldset>
+
+            {bank && (
+              <MoneyField id={ids.start} hintId={ids.startHint} label={t('obOpening')} hint={t('openingHint')} value={start} onChange={setStart} currency={currency} />
+            )}
 
             <button type="submit" className="btn btn-primary press mt-2 w-full">
               {t('obStart')}

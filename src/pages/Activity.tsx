@@ -1,5 +1,7 @@
 import { ReceiptText, Search, SearchX } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import BankBadge from '../components/BankBadge';
 import { CategoryBreakdown } from '../components/CategoryBreakdown';
 import { useEntry } from '../components/EntrySheet';
 import TxList from '../components/TxList';
@@ -25,6 +27,14 @@ export default function Activity() {
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const q = fold(useDeferredValue(query).trim());
+  // ?account=<id> | none — set by tapping an account in Contas.
+  const [params, setParams] = useSearchParams();
+  const acc = params.get('account') ?? '';
+  const accounts = data.accounts;
+  const selectedAccount = accounts.find((a) => a.id === acc) ?? null;
+  const setAcc = (v: string) => setParams(v ? { account: v } : {}, { replace: true });
+  const accountMatch = (x: { accountId?: string; toAccountId?: string; type: string }) =>
+    !acc || (acc === 'none' ? !x.accountId && x.type !== 'transfer' : x.accountId === acc || x.toAccountId === acc);
 
   const range = periodRange('month', anchor);
   const isCurrent = anchor.getFullYear() === today.getFullYear() && anchor.getMonth() === today.getMonth();
@@ -38,9 +48,10 @@ export default function Activity() {
       monthTx.filter(
         (x) =>
           (filter === 'all' || x.type === filter) &&
+          accountMatch(x) &&
           (!q || fold(x.note).includes(q) || fold(categoryLabel(x.category, lang)).includes(q) || x.amount.toFixed(2).includes(q.replace(',', '.'))),
       ),
-    [monthTx, filter, q, lang],
+    [monthTx, filter, q, lang, acc], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const inc = sumMoney(shown.filter((x) => x.type === 'income').map((x) => x.amount));
@@ -65,7 +76,7 @@ export default function Activity() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_20rem] lg:gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_20rem] lg:gap-6">
         <div className="min-w-0 space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row">
             <label className="relative flex-1">
@@ -94,6 +105,26 @@ export default function Activity() {
               />
             </div>
           </div>
+
+          {(accounts.length > 0 || acc) && (
+            <label className="relative flex items-center">
+              <span className="sr-only">{t('account')}</span>
+              <span className="pointer-events-none absolute left-2.5">
+                <BankBadge account={selectedAccount} size={28} />
+              </span>
+              {/* Native select: on iPhone it opens the system wheel picker. */}
+              <select className="field appearance-none pl-12 pr-9" value={acc} onChange={(e) => setAcc(e.target.value)}>
+                <option value="">{t('allAccounts')}</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+                <option value="none">{t('noAccount')}</option>
+              </select>
+              <span className="pointer-events-none absolute right-3.5 text-muted" aria-hidden="true">▾</span>
+            </label>
+          )}
 
           {/* Totals for what is on screen; on desktop they live in the side panel. */}
           {shown.length > 0 && (

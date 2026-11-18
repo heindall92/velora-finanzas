@@ -3,13 +3,14 @@ import { makeT, type Translate } from '../lib/i18n';
 import { formatMoney, roundCents, type CurrencyCode } from '../lib/money';
 import { emptyData, newId } from '../lib/schema';
 import { toDayKey } from '../lib/dates';
-import type { AppData, Goal, Profile, Transaction } from '../lib/types';
+import type { Account, AppData, Goal, Profile, Transaction } from '../lib/types';
 import { clearData, getLangHint, loadStored, saveData } from './storage';
 import { isVaultBlob, newKey, open, type VaultBlob, type VaultKey } from '../lib/vault';
 import { migrate } from '../lib/schema';
 
 export type TxInput = Omit<Transaction, 'id' | 'createdAt'>;
 export type GoalInput = Omit<Goal, 'id' | 'createdAt'>;
+export type AccountInput = Omit<Account, 'id' | 'createdAt'>;
 
 export interface Toast {
   id: number;
@@ -45,7 +46,11 @@ interface Ctx {
   moveGoal: (id: string, delta: number) => void;
   removeGoal: (id: string) => void;
   updateProfile: (p: Partial<Profile>) => void;
-  completeOnboarding: (p: Pick<Profile, 'firstName' | 'lastName' | 'currency' | 'language' | 'budget'>, startBalance: number) => void;
+  completeOnboarding: (p: Pick<Profile, 'firstName' | 'lastName' | 'currency' | 'language' | 'budget'>, first: { bank: string; name: string; opening: number } | null) => void;
+  addAccount: (input: AccountInput) => Account;
+  updateAccount: (id: string, input: Partial<AccountInput>) => void;
+  removeAccount: (id: string) => void;
+  setCategoryLimit: (category: string, limit: number) => void;
   replaceAll: (d: AppData) => void;
   eraseAll: () => Promise<void>;
   toasts: Toast[];
@@ -199,29 +204,71 @@ export function AppProvider({ children, initial }: { children: ReactNode; initia
   );
 
   const completeOnboarding = useCallback<Ctx['completeOnboarding']>(
-    (p, startBalance) =>
+    (p, first) =>
       commit((d) => {
-        const tr = makeT(p.language);
-        const now = new Date();
-        const start: Transaction[] =
-          startBalance > 0
-            ? [
-                {
-                  id: newId(),
-                  type: 'income',
-                  amount: roundCents(startBalance),
-                  category: 'other_in',
-                  note: tr('obStartBalanceNote'),
-                  date: toDayKey(now),
-                  createdAt: now.toISOString(),
-                },
-              ]
-            : [];
+        const accounts: Account[] = first
+          ? [{ id: newId(), name: first.name, kind: 'checking', bank: first.bank, opening: roundCents(first.opening), createdAt: new Date().toISOString() }]
+          : [];
         return {
           ...d,
-          transactions: [...start, ...d.transactions],
+          accounts: [...accounts, ...d.accounts],
           profile: { ...d.profile, ...p, onboardingComplete: true },
         };
+      }),
+    [commit],
+  );
+
+  // ── Accounts (bancos) ─────────────────────────────────────────────────────
+  const addAccount = useCallback(
+    (input: AccountInput) => {
+      const acc: Account = { ...input, opening: roundCents(input.opening), id: newId(), createdAt: new Date().toISOString() };
+      commit((d) => ({ ...d, accounts: [...d.accounts, acc] }));
+      return acc;
+    },
+    [commit],
+  );
+  const updateAccount = useCallback(
+    (id: string, input: Partial<AccountInput>) =>
+      commit((d) => ({ ...d, accounts: d.accounts.map((a) => (a.id === id ? { ...a, ...input } : a)) })),
+    [commit],
+  );
+  /**
+   * Removing an account keeps its movements (spending history stays true): they become
+   * "sem conta"; transfers touching it become plain expenses/incomes. Undo restores everything.
+   */
+  const removeAccount = useCallback(
+    (id: string) => {
+      const before = ref.current;
+      const idx = before.accounts.findIndex((a) => a.id === id);
+      if (idx < 0) return;
+      commit((d) => ({
+        ...d,
+        accounts: d.accounts.filter((a) => a.id !== id),
+        transactions: d.transactions.map((x) => {
+          if (x.type === 'transfer' && (x.accountId === id || x.toAccountId === id)) {
+            const leaving = x.toAccountId === id; // money still left the other account
+            const other = leaving ? x.accountId : x.toAccountId;
+            return { ...x, type: leaving ? 'expense' : 'income', category: leaving ? 'other' : 'other_in', accountId: other, toAccountId: undefined };
+          }
+          return x.accountId === id ? { ...x, accountId: undefined } : x;
+        }),
+      }));
+      const tr = makeT(before.profile.language);
+      toast({
+        message: tr('accountDeleted'),
+        action: { label: tr('undo'), run: () => commit((d) => ({ ...d, accounts: before.accounts, transactions: before.transactions })) },
+      });
+    },
+    [commit, toast],
+  );
+
+  const setCategoryLimit = useCallback(
+    (category: string, limit: number) =>
+      commit((d) => {
+        const next = { ...d.profile.categoryLimits };
+        if (limit > 0) next[category] = roundCents(limit);
+        else delete next[category];
+        return { ...d, profile: { ...d.profile, categoryLimits: next } };
       }),
     [commit],
   );
@@ -318,6 +365,10 @@ export function AppProvider({ children, initial }: { children: ReactNode; initia
       removeGoal,
       updateProfile,
       completeOnboarding,
+      addAccount,
+      updateAccount,
+      removeAccount,
+      setCategoryLimit,
       replaceAll,
       eraseAll,
       toasts,
@@ -325,7 +376,7 @@ export function AppProvider({ children, initial }: { children: ReactNode; initia
       dismissToast,
       today,
     }),
-    [data, status, pinEnabled, unlock, lock, enablePin, disablePin, hintLang, t, money, currency, addTx, updateTx, removeTx, addGoal, updateGoal, moveGoal, removeGoal, updateProfile, completeOnboarding, replaceAll, eraseAll, toasts, toast, dismissToast, today],
+    [data, status, pinEnabled, unlock, lock, enablePin, disablePin, hintLang, t, money, currency, addTx, updateTx, removeTx, addGoal, updateGoal, moveGoal, removeGoal, updateProfile, completeOnboarding, addAccount, updateAccount, removeAccount, setCategoryLimit, replaceAll, eraseAll, toasts, toast, dismissToast, today],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
